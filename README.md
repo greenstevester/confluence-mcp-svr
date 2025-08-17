@@ -1,16 +1,14 @@
 # Confluence MCP Server
 
-A Spring Boot application that serves as a Model Context Protocol (MCP) Server for Confluence integration, enabling AI assistants to interact with Confluence spaces, pages, and content.
+A Model Context Protocol (MCP) Server for Atlassian Confluence, so you can query, scrape and even update Confluence spaces, pages, and content.
 
-## What is this?
+## Key Features
 
-This MCP server provides AI assistants (like Claude) with tools to:
+Provides AI assistants (Github co-pilot, claude, chatGPT) with tools to:
 - Search Confluence spaces and pages
 - Read Confluence page content
 - Create and update Confluence pages
 - Manage Confluence permissions and metadata
-
-**Model Context Protocol (MCP)** is a standardized protocol that allows AI assistants to securely connect to external data sources and tools. This server exposes Confluence functionality through the MCP protocol.
 
 ## Quick Start
 
@@ -18,7 +16,7 @@ This MCP server provides AI assistants (like Claude) with tools to:
 
 - Java 21 or higher
 - Gradle (included via wrapper)
-- Access to a Confluence instance (Cloud or Server)
+- Access to a target Confluence instance (Cloud or Server)
 - Confluence API credentials
 
 ### Installation
@@ -128,7 +126,7 @@ curl http://localhost:8081/mcp/info
 
 The application uses these environment variables:
 ```bash
-export ATLASSIAN_SITE_NAME=your-site-name      # Just the subdomain (e.g., "mycompany")
+export ATLASSIAN_SITE_NAME=your-site-name      
 export ATLASSIAN_USER_EMAIL=your-email@domain.com
 export ATLASSIAN_API_TOKEN=your-api-token
 ```
@@ -139,9 +137,9 @@ All configuration options available in `application.properties`:
 
 ```properties
 # Confluence API Configuration
-confluence.api.base-url=https://${ATLASSIAN_SITE_NAME}.atlassian.net
-confluence.api.username=${ATLASSIAN_USER_EMAIL:}
-confluence.api.token=${ATLASSIAN_API_TOKEN:}
+confluence.api.base-url={ATLASSIAN_SITE_NAME}
+confluence.api.username=${ATLASSIAN_USER_EMAIL}
+confluence.api.token=${ATLASSIAN_API_TOKEN}
 confluence.api.timeout=30s
 confluence.api.max-connections=20
 confluence.api.retry-attempts=3
@@ -235,6 +233,52 @@ Once connected, the following tools will be available to the AI assistant:
 ```
 "Create a new page in the 'Team Docs' space with meeting notes from today"
 ```
+
+## Running in IntelliJ IDEA
+
+### Environment Variables Setup
+
+For IntelliJ IDEA users, we provide a convenient script to automatically generate run configurations with environment variables from your `.env` file.
+
+1. **Create your `.env` file** (if you haven't already):
+   ```bash
+   # Copy the values to your .env file
+   CONFLUENCE_API_BASE_URL=http://localhost:8090
+   CONFLUENCE_API_USERNAME=your-username
+   CONFLUENCE_API_TOKEN=your-api-token
+   ```
+
+2. **Generate IntelliJ run configuration**:
+   ```bash
+   ./create-idea-config.sh
+   ```
+
+   This script will:
+   - Read environment variables from your `.env` file
+   - Create `.idea/runConfigurations/ConfluenceMcpSvrApplication.xml`
+   - Generate a proper IntelliJ run configuration with all environment variables loaded
+
+3. **Use the configuration**:
+   - Restart IntelliJ IDEA or refresh the project
+   - Go to **Run → Edit Configurations**
+   - You'll see **ConfluenceMcpSvrApplication** configuration
+   - Run the application - it will automatically use your `.env` values
+
+### Benefits of this approach:
+
+- ✅ **Secure**: Sensitive credentials stay in `.env` (git-ignored)
+- ✅ **Convenient**: One command to set up IntelliJ configuration
+- ✅ **Consistent**: Same environment variables for all team members
+- ✅ **Simple**: No manual IntelliJ configuration needed
+
+### Updating environment variables:
+
+When you modify your `.env` file, simply re-run:
+```bash
+./create-idea-config.sh
+```
+
+The script will update your IntelliJ configuration with the new values.
 
 ## Development
 
