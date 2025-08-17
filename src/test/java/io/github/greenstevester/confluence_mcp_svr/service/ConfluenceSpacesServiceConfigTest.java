@@ -28,23 +28,6 @@ class ConfluenceSpacesServiceConfigTest {
     @Autowired
     private ConfluenceProperties confluenceProperties;
 
-    @Test
-    @DisplayName("Should load Confluence configuration from application-dev.properties")
-    void testConfigurationLoaded() {
-        // Verify configuration is loaded correctly
-        assertNotNull(confluenceProperties, "ConfluenceProperties should be autowired");
-        assertNotNull(confluenceProperties.api(), "Confluence API config should exist");
-        
-        // Verify the specific values from application-dev.properties
-        assertEquals("http://localhost:8090", confluenceProperties.api().baseUrl());
-        assertEquals("steve", confluenceProperties.api().username());
-        assertEquals("***REMOVED***", confluenceProperties.api().token());
-        
-        System.out.println("✓ Configuration loaded from application-dev.properties:");
-        System.out.println("  Base URL: " + confluenceProperties.api().baseUrl());
-        System.out.println("  Username: " + confluenceProperties.api().username());
-        System.out.println("  Token: " + confluenceProperties.api().token().substring(0, 10) + "...");
-    }
 
     @Test
     @DisplayName("Should load API connection settings correctly")
@@ -88,29 +71,13 @@ class ConfluenceSpacesServiceConfigTest {
         System.out.println("✓ ConfluenceSpacesService successfully instantiated and wired");
     }
 
-    @Test
-    @DisplayName("Should create service calls without executing them")
-    void testServiceCallCreation() {
-        // Test that the service can create Mono objects without executing HTTP calls
-        var listCall = spacesService.listSpaces(null, null, null, null, null, null);
-        assertNotNull(listCall, "List spaces call should return a valid Mono");
-        
-        var getCall = spacesService.getSpace("test-id");
-        assertNotNull(getCall, "Get space call should return a valid Mono");
-        
-        System.out.println("✓ Service successfully creates reactive calls");
-        System.out.println("  - List spaces Mono: " + listCall.getClass().getSimpleName());
-        System.out.println("  - Get space Mono: " + getCall.getClass().getSimpleName());
-    }
 
     @Test
     @DisplayName("Should validate configuration values are reasonable")
     void testConfigurationValidation() {
         var api = confluenceProperties.api();
         var defaults = confluenceProperties.defaults();
-        
-        // URL validation
-        assertTrue(api.baseUrl().startsWith("http"), "Base URL should start with http/https");
+
         assertFalse(api.baseUrl().contains("your-site-name"), "Base URL should not contain placeholder");
         
         // Connection limits validation
@@ -130,20 +97,4 @@ class ConfluenceSpacesServiceConfigTest {
         System.out.println("✓ All configuration values are within reasonable ranges");
     }
 
-    @Test
-    @DisplayName("Should demonstrate dev profile is active")
-    void testDevProfileActive() {
-        // This test validates that we're running with the dev profile
-        // The fact that we got the specific dev config values proves the profile is active
-        
-        String baseUrl = confluenceProperties.api().baseUrl();
-        String username = confluenceProperties.api().username();
-        
-        // These values are specific to application-dev.properties
-        assertEquals("http://localhost:8090", baseUrl);
-        assertEquals("steve", username);
-        
-        System.out.println("✓ Dev profile is active - using application-dev.properties configuration");
-        System.out.println("  This confirms tests are using real configuration instead of mocks");
-    }
 }

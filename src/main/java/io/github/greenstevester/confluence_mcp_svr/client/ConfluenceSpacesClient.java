@@ -21,7 +21,7 @@ import java.util.List;
 public class ConfluenceSpacesClient {
     
     private static final Logger logger = LoggerFactory.getLogger(ConfluenceSpacesClient.class);
-    private static final String API_PATH = "/wiki/api/v2";
+    private static final String API_PATH = "/rest/api";
     
     private final WebClient webClient;
     
@@ -61,7 +61,7 @@ public class ConfluenceSpacesClient {
             queryParams.add("limit", limit.toString());
         }
         
-        String uri = UriComponentsBuilder.fromPath(API_PATH + "/spaces")
+        String uri = UriComponentsBuilder.fromPath(API_PATH + "/space")
             .queryParams(queryParams)
             .toUriString();
             
