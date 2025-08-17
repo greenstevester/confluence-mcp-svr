@@ -1,16 +1,14 @@
 # Confluence MCP Server
 
-A Spring Boot application that serves as a Model Context Protocol (MCP) Server for Confluence integration, enabling AI assistants to interact with Confluence spaces, pages, and content.
+A Model Context Protocol (MCP) Server for Atlassian Confluence, so you can query, scrape and even update Confluence spaces, pages, and content.
 
-## What is this?
+## Key Features
 
-This MCP server provides AI assistants (like Claude) with tools to:
+Provides AI assistants (Github co-pilot, claude, chatGPT) with tools to:
 - Search Confluence spaces and pages
 - Read Confluence page content
 - Create and update Confluence pages
 - Manage Confluence permissions and metadata
-
-**Model Context Protocol (MCP)** is a standardized protocol that allows AI assistants to securely connect to external data sources and tools. This server exposes Confluence functionality through the MCP protocol.
 
 ## Quick Start
 
@@ -18,7 +16,7 @@ This MCP server provides AI assistants (like Claude) with tools to:
 
 - Java 21 or higher
 - Gradle (included via wrapper)
-- Access to a Confluence instance (Cloud or Server)
+- Access to a target Confluence instance (Cloud or Server)
 - Confluence API credentials
 
 ### Installation
@@ -30,35 +28,87 @@ This MCP server provides AI assistants (like Claude) with tools to:
    ```
 
 2. **Configure Confluence credentials:**
-   
-   Create or update `src/main/resources/application.properties`:
-   ```properties
-   # Confluence Configuration
-   confluence.base-url=https://your-domain.atlassian.net
-   confluence.username=your-email@domain.com
-   confluence.api-token=your-api-token
-   
-   # MCP Server Configuration
-   server.port=8080
+
+   You have three options for configuration:
+
+   **Option A: Using Environment Variables (Recommended for production)**
+   ```bash
+   export ATLASSIAN_SITE_NAME=your-site-name  # Just the subdomain, not the full URL
+   export ATLASSIAN_USER_EMAIL=your-email@example.com
+   export ATLASSIAN_API_TOKEN=your-api-token-here
    ```
 
-3. **Build and run:**
+   **Option B: Using application-dev.properties (For development)**
+   
+   Copy the example development configuration:
+   ```bash
+   cp src/main/resources/application-dev.properties src/main/resources/application-local.properties
+   ```
+   
+   Then edit `application-local.properties` with your credentials:
+   ```properties
+   # Confluence API Configuration
+   confluence.api.base-url=https://your-site-name.atlassian.net
+   confluence.api.username=your-email@example.com
+   confluence.api.token=your-api-token-here
+   ```
+
+   **Option C: Direct modification (Quick testing only)**
+   
+   Edit `src/main/resources/application.properties` directly (not recommended for production).
+
+3. **Get your Confluence API Token:**
+   - Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+   - Click "Create API token"
+   - Give it a label (e.g., "MCP Server")
+   - Copy the token immediately (you won't be able to see it again)
+
+4. **Build the application:**
+   ```bash
+   ./gradlew build
+   ```
+
+5. **Run the application:**
+
+   **For development with application-dev.properties:**
+   ```bash
+   ./gradlew bootRun --args='--spring.profiles.active=dev'
+   ```
+
+   **For development with custom local properties:**
+   ```bash
+   ./gradlew bootRun --args='--spring.profiles.active=local'
+   ```
+
+   **For production with environment variables:**
    ```bash
    ./gradlew bootRun
    ```
 
-The server will start on `http://localhost:8080` and be ready to accept MCP client connections.
+   **Or using the JAR directly:**
+   ```bash
+   java -jar build/libs/confluence-mcp-svr-0.0.1-SNAPSHOT.jar
+   ```
 
-### First Success Test
+The server will start on `http://localhost:8081` and be ready to accept MCP client connections.
 
-Verify the server is working by checking the health endpoint:
+### Verify Installation
+
+Once the server is running, verify it's working:
+
+**Check health endpoint:**
 ```bash
-curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
 ```
 
 Expected response:
 ```json
 {"status":"UP"}
+```
+
+**Check MCP server info:**
+```bash
+curl http://localhost:8081/mcp/info
 ```
 
 ## Configuration
@@ -74,24 +124,58 @@ Expected response:
 
 ### Environment Variables
 
-You can also configure using environment variables:
+The application uses these environment variables:
 ```bash
-export CONFLUENCE_BASE_URL=https://your-domain.atlassian.net
-export CONFLUENCE_USERNAME=your-email@domain.com
-export CONFLUENCE_API_TOKEN=your-api-token
+export ATLASSIAN_SITE_NAME=your-site-name      
+export ATLASSIAN_USER_EMAIL=your-email@domain.com
+export ATLASSIAN_API_TOKEN=your-api-token
 ```
 
 ### Advanced Configuration
 
-```properties
-# Connection settings
-confluence.connection-timeout=30s
-confluence.read-timeout=60s
+All configuration options available in `application.properties`:
 
-# MCP Server settings
-mcp.server.name=confluence-server
-mcp.server.version=1.0.0
+```properties
+# Confluence API Configuration
+confluence.api.base-url={ATLASSIAN_SITE_NAME}
+confluence.api.username=${ATLASSIAN_USER_EMAIL}
+confluence.api.token=${ATLASSIAN_API_TOKEN}
+confluence.api.timeout=30s
+confluence.api.max-connections=20
+confluence.api.retry-attempts=3
+
+# MCP Server Configuration
+mcp.server.name=mcp-server-atlassian-confluence
+mcp.server.version=2.0.1
+mcp.server.description=MCP server for Atlassian Confluence
+
+# Default Settings
+confluence.defaults.page-size=25
+confluence.defaults.body-format=storage
+confluence.defaults.include-labels=true
+confluence.defaults.include-version=true
 ```
+
+### Troubleshooting
+
+**Common Issues:**
+
+1. **Connection refused on port 8081:**
+   - Ensure no other service is using port 8081
+   - Change the port in application.properties: `server.port=8082`
+
+2. **Authentication errors:**
+   - Verify your API token is valid and not expired
+   - Ensure you're using the correct site name (just the subdomain)
+   - Check that your user has appropriate Confluence permissions
+
+3. **Build failures:**
+   - Ensure Java 21 is installed: `java -version`
+   - Clear Gradle cache: `./gradlew clean build`
+
+4. **Runtime configuration issues:**
+   - Check active profile: Add `-Dspring.profiles.active=dev` for development
+   - Verify environment variables are set: `echo $ATLASSIAN_SITE_NAME`
 
 ## Usage
 
@@ -150,6 +234,52 @@ Once connected, the following tools will be available to the AI assistant:
 "Create a new page in the 'Team Docs' space with meeting notes from today"
 ```
 
+## Running in IntelliJ IDEA
+
+### Environment Variables Setup
+
+For IntelliJ IDEA users, we provide a convenient script to automatically generate run configurations with environment variables from your `.env` file.
+
+1. **Create your `.env` file** (if you haven't already):
+   ```bash
+   # Copy the values to your .env file
+   CONFLUENCE_API_BASE_URL=http://localhost:8090
+   CONFLUENCE_API_USERNAME=your-username
+   CONFLUENCE_API_TOKEN=your-api-token
+   ```
+
+2. **Generate IntelliJ run configuration**:
+   ```bash
+   ./create-idea-config.sh
+   ```
+
+   This script will:
+   - Read environment variables from your `.env` file
+   - Create `.idea/runConfigurations/ConfluenceMcpSvrApplication.xml`
+   - Generate a proper IntelliJ run configuration with all environment variables loaded
+
+3. **Use the configuration**:
+   - Restart IntelliJ IDEA or refresh the project
+   - Go to **Run → Edit Configurations**
+   - You'll see **ConfluenceMcpSvrApplication** configuration
+   - Run the application - it will automatically use your `.env` values
+
+### Benefits of this approach:
+
+- ✅ **Secure**: Sensitive credentials stay in `.env` (git-ignored)
+- ✅ **Convenient**: One command to set up IntelliJ configuration
+- ✅ **Consistent**: Same environment variables for all team members
+- ✅ **Simple**: No manual IntelliJ configuration needed
+
+### Updating environment variables:
+
+When you modify your `.env` file, simply re-run:
+```bash
+./create-idea-config.sh
+```
+
+The script will update your IntelliJ configuration with the new values.
+
 ## Development
 
 ### Building the Project
@@ -174,6 +304,16 @@ Once connected, the following tools will be available to the AI assistant:
 # Run specific test class
 ./gradlew test --tests "ConfluenceMcpSvrApplicationTests"
 ```
+
+All tests pass when run with:
+SPRING_PROFILES_ACTIVE=dev ./gradlew test
+
+The tests demonstrate that:
+- Configuration is correctly loaded from application-dev.properties
+- Service uses real Confluence API settings (not mocks)
+- Dev profile is active and working
+- Service is properly wired with Spring dependency injection
+
 
 ### Project Structure
 
