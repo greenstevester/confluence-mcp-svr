@@ -1,0 +1,14 @@
+package io.github.greenstevester.confluence_mcp_svr.model.search;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+/**
+ * Represents space information in search results
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record SearchResultSpace(
+    String key,
+    String name,
+    String type,
+    String status
+) {}
