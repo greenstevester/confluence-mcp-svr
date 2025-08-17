@@ -3,10 +3,14 @@
 Last updated: 2025-08-17
 
 ## In Progress
-*(No tasks currently in progress)*
+_No tasks currently in progress_
 
 ## Pending
-*(No pending tasks)*
+_No pending tasks_
 
 ## Completed
-*(No completed tasks)*
+_No completed tasks_
+
+---
+
+This file is automatically synced with Claude Code's TodoWrite tool. Use `/sync-todos` to update this file with your current task progress.
