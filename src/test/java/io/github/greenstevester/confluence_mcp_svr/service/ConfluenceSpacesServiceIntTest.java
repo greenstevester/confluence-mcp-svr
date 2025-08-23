@@ -1,23 +1,17 @@
 package io.github.greenstevester.confluence_mcp_svr.service;
 
+import io.github.greenstevester.confluence_mcp_svr.AbstractConfluenceIntTest;
 import io.github.greenstevester.confluence_mcp_svr.config.ConfluenceProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,10 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests actual connectivity to Confluence server configured in application-dev.properties
  */
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
-@ActiveProfiles("dev")
 @DisplayName("ConfluenceSpacesService Integration Tests")
-class ConfluenceSpacesServiceTest {
+class ConfluenceSpacesServiceIntTest extends AbstractConfluenceIntTest {
 
     @Autowired
     private ConfluenceSpacesService spacesService;
@@ -45,42 +37,6 @@ class ConfluenceSpacesServiceTest {
 
     @Value("${confluence.api.token}")
     private String token;
-
-    static {
-        loadEnvironmentVariables();
-    }
-
-    private static void loadEnvironmentVariables() {
-
-        final Map<String, String> ENV_TO_PROPERTY_MAP = Map.of(
-                "CONFLUENCE_API_BASE_URL", "confluence.api.base-url",
-                "CONFLUENCE_API_USERNAME", "confluence.api.username",
-                "CONFLUENCE_API_TOKEN", "confluence.api.token"
-        );
-
-        Path envFile = Paths.get(".env");
-        if (Files.exists(envFile)) {
-            try {
-                Files.lines(envFile)
-                        .filter(line -> !line.trim().isEmpty() && !line.trim().startsWith("#"))
-                        .forEach(line -> {
-                            String[] parts = line.split("=", 2);
-                            if (parts.length == 2) {
-                                String key = parts[0].trim();
-                                String value = parts[1].trim();
-                                System.setProperty(key, value);
-                                
-                                String mappedProperty = ENV_TO_PROPERTY_MAP.get(key);
-                                if (mappedProperty != null) {
-                                    System.setProperty(mappedProperty, value);
-                                }
-                            }
-                        });
-            } catch (IOException e) {
-                System.err.println("Warning: Could not load .env file: " + e.getMessage());
-            }
-        }
-    }
 
 
     @Test

@@ -64,7 +64,8 @@ public class ConfluenceSearchService {
         return searchClient.search(request)
             .map(this::formatSearchResults)
             .doOnSuccess(result -> logger.debug("Formatted search results"))
-            .doOnError(error -> logger.error("Error during search", error));
+            .doOnError(error -> logger.error("Error during search", error))
+            .onErrorReturn("Error performing search: Please check your Confluence connection and CQL query.");
     }
     
     /**
