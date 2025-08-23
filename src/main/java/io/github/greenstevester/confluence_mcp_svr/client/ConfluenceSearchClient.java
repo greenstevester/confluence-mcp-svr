@@ -69,7 +69,7 @@ public class ConfluenceSearchClient {
             .retrieve()
             .bodyToMono(SearchResponse.class)
             .doOnSuccess(response -> logger.debug("Search completed with {} results", 
-                response != null ? response.results().size() : 0))
-            .doOnError(error -> logger.error("Error during search", error));
+                response != null && response.results() != null ? response.results().size() : 0))
+            .doOnError(error -> logger.error("Error during search: {}", error.getMessage(), error));
     }
 }
