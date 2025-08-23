@@ -25,7 +25,7 @@ This is a Spring Boot application configured as an MCP (Model Context Protocol) 
 
 ### Running a specific test class
 ```bash
-./gradlew test --tests "io.github.greenstevester.confluence_mcp_svr.ConfluenceMcpSvrApplicationTests"
+./gradlew test --tests "io.github.greenstevester.confluencemcpsvr.ConfluenceMcpSvrApplicationTests"
 ```
 
 ### Clean build
@@ -48,7 +48,7 @@ This is a Spring Boot application configured as an MCP (Model Context Protocol) 
 - **Spring AI Version**: 1.0.1
 
 ### Package Structure
-- Base package: `io.github.greenstevester.confluence_mcp_svr`
+- Base package: `io.github.greenstevester.confluencemcpsvr`
 - Main application class: `ConfluenceMcpSvrApplication` - Standard Spring Boot application entry point
 
 ### Key Dependencies
