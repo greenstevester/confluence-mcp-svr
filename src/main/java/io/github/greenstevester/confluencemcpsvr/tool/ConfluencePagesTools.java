@@ -1,5 +1,6 @@
 package io.github.greenstevester.confluencemcpsvr.tool;
 
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.ContentStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluencePagesService;
@@ -62,6 +63,30 @@ public class ConfluencePagesTools {
     }
     
     /**
+     * Create a new page in Confluence
+     */
+    public String createPage(CreatePageToolRequest request) {
+        logger.debug("create_page tool called with: {}", request);
+        
+        try {
+            CreatePageRequest createRequest = CreatePageRequest.builder()
+                .title(request.title())
+                .spaceKey(request.spaceKey())
+                .parentId(request.parentId())
+                .content(request.content())
+                .contentRepresentation(request.contentRepresentation())
+                .status(request.status())
+                .build();
+                
+            return pagesService.createPage(createRequest).block(); // Block for synchronous tool execution
+            
+        } catch (Exception e) {
+            logger.error("Error in create_page tool", e);
+            return "Error creating page: " + e.getMessage();
+        }
+    }
+    
+    /**
      * Request object for list_pages tool
      */
     public record ListPagesRequest(
@@ -78,5 +103,17 @@ public class ConfluencePagesTools {
      */
     public record GetPageRequest(
         String pageId
+    ) {}
+    
+    /**
+     * Request object for create_page tool
+     */
+    public record CreatePageToolRequest(
+        String title,
+        String spaceKey,
+        String parentId,
+        String content,
+        String contentRepresentation,
+        ContentStatus status
     ) {}
 }

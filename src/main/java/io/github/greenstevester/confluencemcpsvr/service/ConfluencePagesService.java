@@ -3,6 +3,7 @@ package io.github.greenstevester.confluencemcpsvr.service;
 import io.github.greenstevester.confluencemcpsvr.client.ConfluencePagesClient;
 import io.github.greenstevester.confluencemcpsvr.config.ConfluenceProperties;
 import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.GetPageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.ListPagesRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.BodyFormat;
@@ -229,6 +230,63 @@ public class ConfluencePagesService {
         // Timestamp
         result.append(markdownFormatter.formatItalic(
             "Page information retrieved at " + markdownFormatter.formatDate(LocalDateTime.now())));
+        
+        return result.toString();
+    }
+    
+    /**
+     * Create a new page in Confluence
+     */
+    public Mono<String> createPage(CreatePageRequest request) {
+        logger.debug("Creating page with title: {}", request.title());
+        
+        return pagesClient.createPage(request)
+            .map(this::formatPageCreationResult)
+            .doOnSuccess(result -> logger.debug("Successfully created page"))
+            .doOnError(error -> logger.error("Error creating page with title: {}", request.title(), error))
+            .onErrorReturn("Error creating page: Please check your Confluence connection, permissions, and parameters.");
+    }
+    
+    /**
+     * Format the result of page creation
+     */
+    private String formatPageCreationResult(PageDetailed createdPage) {
+        StringBuilder result = new StringBuilder();
+        
+        // Success message
+        result.append(markdownFormatter.formatHeading("✅ Page Created Successfully", 1))
+              .append("\n\n");
+        
+        String baseUrl = confluenceProperties.api().baseUrl();
+        String overview = String.format("New page created in space `%s`", createdPage.spaceId());
+        result.append(markdownFormatter.formatBlockquote(overview))
+              .append("\n\n");
+        
+        // Created page details
+        result.append(markdownFormatter.formatHeading("Created Page Details", 2))
+              .append("\n\n");
+        
+        Map<String, Object> pageInfo = Map.of(
+            "ID", createdPage.id(),
+            "Title", createdPage.title(),
+            "Space ID", createdPage.spaceId() != null ? createdPage.spaceId() : "N/A",
+            "Parent ID", createdPage.parentId() != null ? createdPage.parentId() : "None (Top-level page)"
+        );
+        
+        result.append(markdownFormatter.formatBulletList(pageInfo, key -> key))
+              .append("\n\n");
+        
+        // Access link - construct from base URL and page ID
+        String pageUrl = baseUrl + "/pages/" + createdPage.id();
+        result.append(markdownFormatter.formatHeading("Quick Access", 2))
+              .append("\n\n")
+              .append("View page: ")
+              .append(markdownFormatter.formatUrl(pageUrl, "Open in Confluence"))
+              .append("\n\n");
+        
+        // Timestamp
+        result.append(markdownFormatter.formatItalic(
+            "Page created at " + markdownFormatter.formatDate(LocalDateTime.now())));
         
         return result.toString();
     }

@@ -1,5 +1,6 @@
 package io.github.greenstevester.confluencemcpsvr.tool;
 
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreateSpaceRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceType;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluenceSpacesService;
@@ -134,6 +135,29 @@ public class ConfluenceSpacesTools {
     }
     
     /**
+     * Create a new space in Confluence
+     */
+    public String createSpace(CreateSpaceToolRequest request) {
+        logger.debug("create_space tool called with: {}", request);
+        
+        try {
+            CreateSpaceRequest createRequest = CreateSpaceRequest.builder()
+                .key(request.key())
+                .name(request.name())
+                .description(request.description())
+                .type(request.type())
+                .status(request.status())
+                .build();
+                
+            return spacesService.createSpace(createRequest).block(); // Block for synchronous tool execution
+            
+        } catch (Exception e) {
+            logger.error("Error in create_space tool", e);
+            return "Error creating space: " + e.getMessage();
+        }
+    }
+    
+    /**
      * Request object for list_spaces tool
      */
     public record ListSpacesRequest(
@@ -150,5 +174,16 @@ public class ConfluenceSpacesTools {
      */
     public record GetSpaceRequest(
         String spaceId
+    ) {}
+    
+    /**
+     * Request object for create_space tool
+     */
+    public record CreateSpaceToolRequest(
+        String key,
+        String name,
+        String description,
+        SpaceType type,
+        SpaceStatus status
     ) {}
 }

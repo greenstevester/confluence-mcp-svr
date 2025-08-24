@@ -1,6 +1,7 @@
 package io.github.greenstevester.confluencemcpsvr.client;
 
 import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.GetPageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.ListPagesRequest;
 import io.github.greenstevester.confluencemcpsvr.model.page.Page;
@@ -141,5 +142,55 @@ public class ConfluencePagesClient {
             .doOnSuccess(page -> logger.debug("Successfully retrieved page: {}", 
                 page != null ? page.title() : "null"))
             .doOnError(error -> logger.error("Error getting page {}", pageId, error));
+    }
+    
+    /**
+     * Create a new page in Confluence
+     */
+    public Mono<PageDetailed> createPage(CreatePageRequest request) {
+        logger.debug("Creating page with title: {}", request.title());
+        
+        // Build the request body for Confluence API
+        var requestBody = new java.util.HashMap<String, Object>();
+        requestBody.put("type", "page");
+        requestBody.put("title", request.title());
+        
+        // Space information
+        var space = new java.util.HashMap<String, String>();
+        space.put("key", request.spaceKey());
+        requestBody.put("space", space);
+        
+        // Parent page if specified
+        if (request.parentId() != null) {
+            var ancestors = new java.util.ArrayList<>();
+            var parent = new java.util.HashMap<String, String>();
+            parent.put("id", request.parentId());
+            ancestors.add(parent);
+            requestBody.put("ancestors", ancestors);
+        }
+        
+        // Page body content
+        var body = new java.util.HashMap<String, Object>();
+        var storage = new java.util.HashMap<String, String>();
+        storage.put("value", request.content());
+        storage.put("representation", request.contentRepresentation());
+        body.put("storage", storage);
+        requestBody.put("body", body);
+        
+        // Status
+        requestBody.put("status", request.status().getValue());
+        
+        String uri = API_PATH + "/content";
+        
+        logger.debug("Making POST request to: {}", uri);
+        
+        return webClient.post()
+            .uri(uri)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(PageDetailed.class)
+            .doOnSuccess(page -> logger.debug("Successfully created page: {}", 
+                page != null ? page.title() : "null"))
+            .doOnError(error -> logger.error("Error creating page with title: {}", request.title(), error));
     }
 }

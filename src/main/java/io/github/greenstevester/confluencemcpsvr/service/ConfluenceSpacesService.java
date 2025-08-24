@@ -3,6 +3,7 @@ package io.github.greenstevester.confluencemcpsvr.service;
 import io.github.greenstevester.confluencemcpsvr.client.ConfluenceSpacesClient;
 import io.github.greenstevester.confluencemcpsvr.config.ConfluenceProperties;
 import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreateSpaceRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceType;
 import io.github.greenstevester.confluencemcpsvr.model.space.Space;
@@ -218,6 +219,80 @@ public class ConfluenceSpacesService {
         // Timestamp
         result.append(markdownFormatter.formatItalic(
             "Space information retrieved at " + markdownFormatter.formatDate(LocalDateTime.now())));
+        
+        return result.toString();
+    }
+    
+    /**
+     * Create a new space in Confluence
+     */
+    public Mono<String> createSpace(CreateSpaceRequest request) {
+        logger.debug("Creating space with key: {}", request.key());
+        
+        return spacesClient.createSpace(request)
+            .map(this::formatSpaceCreationResult)
+            .doOnSuccess(result -> logger.debug("Successfully created space"))
+            .doOnError(error -> logger.error("Error creating space with key: {}", request.key(), error))
+            .onErrorReturn("Error creating space: Please check your Confluence connection, permissions, space key format, and parameters.");
+    }
+    
+    /**
+     * Format the result of space creation
+     */
+    private String formatSpaceCreationResult(Space createdSpace) {
+        StringBuilder result = new StringBuilder();
+        
+        // Success message
+        result.append(markdownFormatter.formatHeading("✅ Space Created Successfully", 1))
+              .append("\n\n");
+        
+        String overview = String.format("New %s space created with key `%s`", 
+            createdSpace.type().getValue(), createdSpace.key());
+        result.append(markdownFormatter.formatBlockquote(overview))
+              .append("\n\n");
+        
+        // Created space details
+        result.append(markdownFormatter.formatHeading("Created Space Details", 2))
+              .append("\n\n");
+        
+        Map<String, Object> spaceInfo = Map.of(
+            "ID", createdSpace.id(),
+            "Name", createdSpace.name(),
+            "Key", markdownFormatter.formatInlineCode(createdSpace.key()),
+            "Type", createdSpace.type().getValue(),
+            "Status", createdSpace.status().getValue(),
+            "Homepage ID", createdSpace.homepageId() != null ? createdSpace.homepageId() : "N/A",
+            "Created At", createdSpace.createdAt() != null ? 
+                markdownFormatter.formatDate(createdSpace.createdAt()) : "N/A"
+        );
+        
+        result.append(markdownFormatter.formatBulletList(spaceInfo, key -> key))
+              .append("\n\n");
+        
+        // Description if provided
+        if (createdSpace.description() != null && 
+            createdSpace.description().plain() != null && 
+            createdSpace.description().plain().value() != null) {
+            result.append(markdownFormatter.formatHeading("Description", 2))
+                  .append("\n\n")
+                  .append(createdSpace.description().plain().value())
+                  .append("\n\n");
+        }
+        
+        // Access link if available
+        if (createdSpace.links() != null) {
+            String baseUrl = confluenceProperties.api().baseUrl();
+            String spaceUrl = baseUrl + "/spaces/" + createdSpace.key();
+            result.append(markdownFormatter.formatHeading("Quick Access", 2))
+                  .append("\n\n")
+                  .append("View space: ")
+                  .append(markdownFormatter.formatUrl(spaceUrl, "Open in Confluence"))
+                  .append("\n\n");
+        }
+        
+        // Timestamp
+        result.append(markdownFormatter.formatItalic(
+            "Space created at " + markdownFormatter.formatDate(LocalDateTime.now())));
         
         return result.toString();
     }

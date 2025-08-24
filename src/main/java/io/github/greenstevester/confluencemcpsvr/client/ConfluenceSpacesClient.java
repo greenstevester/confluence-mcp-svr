@@ -1,6 +1,7 @@
 package io.github.greenstevester.confluencemcpsvr.client;
 
 import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreateSpaceRequest;
 import io.github.greenstevester.confluencemcpsvr.model.space.Space;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,5 +94,42 @@ public class ConfluenceSpacesClient {
             .doOnSuccess(space -> logger.debug("Successfully retrieved space: {}", 
                 space != null ? space.name() : "null"))
             .doOnError(error -> logger.error("Error getting space {}", spaceId, error));
+    }
+    
+    /**
+     * Create a new space in Confluence
+     */
+    public Mono<Space> createSpace(CreateSpaceRequest request) {
+        logger.debug("Creating space with key: {}", request.key());
+        
+        // Build the request body for Confluence API
+        var requestBody = new java.util.HashMap<String, Object>();
+        requestBody.put("key", request.key());
+        requestBody.put("name", request.name());
+        requestBody.put("type", request.type().getValue());
+        requestBody.put("status", request.status().getValue());
+        
+        // Add description if provided
+        if (request.description() != null && !request.description().trim().isEmpty()) {
+            var description = new java.util.HashMap<String, Object>();
+            var plain = new java.util.HashMap<String, String>();
+            plain.put("value", request.description());
+            plain.put("representation", "plain");
+            description.put("plain", plain);
+            requestBody.put("description", description);
+        }
+        
+        String uri = API_PATH + "/space";
+        
+        logger.debug("Making POST request to: {}", uri);
+        
+        return webClient.post()
+            .uri(uri)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(Space.class)
+            .doOnSuccess(space -> logger.debug("Successfully created space: {}", 
+                space != null ? space.name() : "null"))
+            .doOnError(error -> logger.error("Error creating space with key: {}", request.key(), error));
     }
 }
