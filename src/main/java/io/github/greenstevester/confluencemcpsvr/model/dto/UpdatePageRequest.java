@@ -25,11 +25,7 @@ public record UpdatePageRequest(
     String parentId
 ) {
     
-    public UpdatePageRequest {
-        if (contentRepresentation == null) {
-            contentRepresentation = "storage";
-        }
-    }
+    // No custom constructor - rely on builder pattern for defaults
     
     /**
      * Builder pattern for easier construction
@@ -83,7 +79,9 @@ public record UpdatePageRequest(
         }
         
         public UpdatePageRequest build() {
-            return new UpdatePageRequest(pageId, title, content, contentRepresentation, status, version, parentId);
+            // Ensure contentRepresentation has a default value
+            String finalContentRepresentation = contentRepresentation != null ? contentRepresentation : "storage";
+            return new UpdatePageRequest(pageId, title, content, finalContentRepresentation, status, version, parentId);
         }
     }
 }

@@ -6,6 +6,8 @@ import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.UpdatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.ContentStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(SpringExtension.class)
 @DisplayName("ConfluencePagesService Integration Tests")
-class
-ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
+class ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ConfluencePagesServiceIntTest.class);
 
     @Autowired
     private ConfluencePagesService pagesService;
@@ -43,6 +46,36 @@ ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
 
     @Value("${confluence.api.token}")
     private String token;
+    
+    @Autowired
+    private ConfluenceSpacesService spacesService;
+    
+    /**
+     * Helper method to discover an existing space for testing
+     * @return A space key that exists, or "TEST" as fallback
+     */
+    private String getExistingSpaceKey() {
+        try {
+            String spacesResponse = spacesService.listSpaces(null, null, null, null, 5, null).block();
+            if (spacesResponse != null && spacesResponse.contains("Key")) {
+                // Extract first space key from the response (simple parsing)
+                String[] lines = spacesResponse.split("\\n");
+                for (String line : lines) {
+                    if (line.contains("Key:") && line.contains("`")) {
+                        int start = line.indexOf("`") + 1;
+                        int end = line.indexOf("`", start);
+                        if (start > 0 && end > start) {
+                            return line.substring(start, end);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If space discovery fails, fall back to generic key
+            logger.warn("Could not discover existing space, using fallback", e);
+        }
+        return "TEST"; // Fallback space key
+    }
 
     @Test
     @DisplayName("Should list pages successfully with basic parameters")
@@ -361,10 +394,11 @@ ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
     @Test
     @DisplayName("Should create page with valid request")
     void testCreatePageWithValidRequest() {
-        // Arrange - Create a page request with test data
+        // Arrange - Create a page request with test data using discovered space
+        String spaceKey = getExistingSpaceKey();
         CreatePageRequest createRequest = CreatePageRequest.builder()
             .title("Test Page - " + System.currentTimeMillis()) // Unique title
-            .spaceKey("TEST") // Assuming a TEST space exists or handle gracefully
+            .spaceKey(spaceKey) // Use discovered space key
             .content("<p>This is a test page created by integration tests.</p>")
             .contentRepresentation("storage")
             .status(ContentStatus.CURRENT)
@@ -500,10 +534,11 @@ ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
     @Test
     @DisplayName("Should handle create page with minimal required fields")
     void testCreatePageWithMinimalFields() {
-        // Arrange - Create request with only required fields
+        // Arrange - Create request with only required fields using discovered space
+        String spaceKey = getExistingSpaceKey();
         CreatePageRequest createRequest = CreatePageRequest.builder()
             .title("Minimal Test Page - " + System.currentTimeMillis())
-            .spaceKey("TEST")
+            .spaceKey(spaceKey) // Use discovered space key
             .content("<p>Minimal page content.</p>")
             .build(); // Uses defaults for optional fields
         

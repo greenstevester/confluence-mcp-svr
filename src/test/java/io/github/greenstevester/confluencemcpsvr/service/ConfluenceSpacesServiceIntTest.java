@@ -41,6 +41,33 @@ class ConfluenceSpacesServiceIntTest extends AbstractConfluenceIntTest {
 
     @Value("${confluence.api.token}")
     private String token;
+    
+    /**
+     * Helper method to discover an existing space key for testing
+     * @return A space key that exists, or "TEST" as fallback
+     */
+    private String getExistingSpaceKey() {
+        try {
+            String spacesResponse = spacesService.listSpaces(null, null, null, null, 5, null).block();
+            if (spacesResponse != null && spacesResponse.contains("Key")) {
+                // Extract first space key from the response (simple parsing)
+                String[] lines = spacesResponse.split("\\n");
+                for (String line : lines) {
+                    if (line.contains("Key:") && line.contains("`")) {
+                        int start = line.indexOf("`") + 1;
+                        int end = line.indexOf("`", start);
+                        if (start > 0 && end > start) {
+                            return line.substring(start, end);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If space discovery fails, fall back to generic key
+            System.err.println("Could not discover existing space, using fallback: " + e.getMessage());
+        }
+        return "TEST"; // Fallback space key
+    }
 
 
     @Test
@@ -178,9 +205,8 @@ class ConfluenceSpacesServiceIntTest extends AbstractConfluenceIntTest {
     @Test
     @DisplayName("Should update space with valid request")
     void testUpdateSpaceWithValidRequest() {
-        // Note: This test uses a generic space key that may not exist
-        // In real environment, you'd use an existing space key
-        String testSpaceKey = "TEST";
+        // Use discovered existing space key for more reliable testing
+        String testSpaceKey = getExistingSpaceKey();
         
         // Arrange - Create an update request
         UpdateSpaceRequest updateRequest = UpdateSpaceRequest.builder()

@@ -229,7 +229,9 @@ public class ConfluencePagesClient {
             var body = new java.util.HashMap<String, Object>();
             var storage = new java.util.HashMap<String, String>();
             storage.put("value", request.content());
-            storage.put("representation", request.contentRepresentation());
+            // Ensure contentRepresentation is not null, default to "storage"
+            String representation = request.contentRepresentation() != null ? request.contentRepresentation() : "storage";
+            storage.put("representation", representation);
             body.put("storage", storage);
             requestBody.put("body", body);
         }
