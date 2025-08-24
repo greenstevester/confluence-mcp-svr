@@ -6,6 +6,7 @@ import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
 import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.GetPageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.ListPagesRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.BodyFormat;
 import io.github.greenstevester.confluencemcpsvr.model.enums.ContentStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
@@ -287,6 +288,63 @@ public class ConfluencePagesService {
         // Timestamp
         result.append(markdownFormatter.formatItalic(
             "Page created at " + markdownFormatter.formatDate(LocalDateTime.now())));
+        
+        return result.toString();
+    }
+    
+    /**
+     * Update an existing page in Confluence
+     */
+    public Mono<String> updatePage(UpdatePageRequest request) {
+        logger.debug("Updating page with ID: {}", request.pageId());
+        
+        return pagesClient.updatePage(request)
+            .map(this::formatPageUpdateResult)
+            .doOnSuccess(result -> logger.debug("Successfully updated page"))
+            .doOnError(error -> logger.error("Error updating page with ID: {}", request.pageId(), error))
+            .onErrorReturn("Error updating page: Please check your Confluence connection, permissions, page ID, and version number.");
+    }
+    
+    /**
+     * Format the result of page update
+     */
+    private String formatPageUpdateResult(PageDetailed updatedPage) {
+        StringBuilder result = new StringBuilder();
+        
+        // Success message
+        result.append(markdownFormatter.formatHeading("✅ Page Updated Successfully", 1))
+              .append("\n\n");
+        
+        String baseUrl = confluenceProperties.api().baseUrl();
+        String overview = String.format("Page updated in space `%s`", updatedPage.spaceId());
+        result.append(markdownFormatter.formatBlockquote(overview))
+              .append("\n\n");
+        
+        // Updated page details
+        result.append(markdownFormatter.formatHeading("Updated Page Details", 2))
+              .append("\n\n");
+        
+        Map<String, Object> pageInfo = Map.of(
+            "ID", updatedPage.id(),
+            "Title", updatedPage.title(),
+            "Space ID", updatedPage.spaceId() != null ? updatedPage.spaceId() : "N/A",
+            "Parent ID", updatedPage.parentId() != null ? updatedPage.parentId() : "None (Top-level page)"
+        );
+        
+        result.append(markdownFormatter.formatBulletList(pageInfo, key -> key))
+              .append("\n\n");
+        
+        // Access link - construct from base URL and page ID
+        String pageUrl = baseUrl + "/pages/" + updatedPage.id();
+        result.append(markdownFormatter.formatHeading("Quick Access", 2))
+              .append("\n\n")
+              .append("View page: ")
+              .append(markdownFormatter.formatUrl(pageUrl, "Open in Confluence"))
+              .append("\n\n");
+        
+        // Timestamp
+        result.append(markdownFormatter.formatItalic(
+            "Page updated at " + markdownFormatter.formatDate(LocalDateTime.now())));
         
         return result.toString();
     }

@@ -1,6 +1,7 @@
 package io.github.greenstevester.confluencemcpsvr.tool;
 
 import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.ContentStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluencePagesService;
@@ -87,6 +88,31 @@ public class ConfluencePagesTools {
     }
     
     /**
+     * Update an existing page in Confluence
+     */
+    public String updatePage(UpdatePageToolRequest request) {
+        logger.debug("update_page tool called with: {}", request);
+        
+        try {
+            UpdatePageRequest updateRequest = UpdatePageRequest.builder()
+                .pageId(request.pageId())
+                .title(request.title())
+                .content(request.content())
+                .contentRepresentation(request.contentRepresentation())
+                .status(request.status())
+                .version(request.version())
+                .parentId(request.parentId())
+                .build();
+                
+            return pagesService.updatePage(updateRequest).block(); // Block for synchronous tool execution
+            
+        } catch (Exception e) {
+            logger.error("Error in update_page tool", e);
+            return "Error updating page: " + e.getMessage();
+        }
+    }
+    
+    /**
      * Request object for list_pages tool
      */
     public record ListPagesRequest(
@@ -115,5 +141,18 @@ public class ConfluencePagesTools {
         String content,
         String contentRepresentation,
         ContentStatus status
+    ) {}
+    
+    /**
+     * Request object for update_page tool
+     */
+    public record UpdatePageToolRequest(
+        String pageId,
+        String title,
+        String content,
+        String contentRepresentation,
+        ContentStatus status,
+        Integer version,
+        String parentId
     ) {}
 }

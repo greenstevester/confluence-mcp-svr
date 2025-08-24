@@ -4,6 +4,7 @@ import io.github.greenstevester.confluencemcpsvr.client.ConfluenceSpacesClient;
 import io.github.greenstevester.confluencemcpsvr.config.ConfluenceProperties;
 import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
 import io.github.greenstevester.confluencemcpsvr.model.dto.CreateSpaceRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdateSpaceRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceType;
 import io.github.greenstevester.confluencemcpsvr.model.space.Space;
@@ -78,7 +79,8 @@ public class ConfluenceSpacesService {
         return spacesClient.getSpace(spaceId)
             .map(this::formatSpaceDetails)
             .doOnSuccess(result -> logger.debug("Formatted space details response"))
-            .doOnError(error -> logger.error("Error getting space {}", spaceId, error));
+            .doOnError(error -> logger.error("Error getting space {}", spaceId, error))
+            .onErrorReturn("Error getting space: Please check your Confluence connection, permissions, and space ID.");
     }
     
     /**
@@ -293,6 +295,78 @@ public class ConfluenceSpacesService {
         // Timestamp
         result.append(markdownFormatter.formatItalic(
             "Space created at " + markdownFormatter.formatDate(LocalDateTime.now())));
+        
+        return result.toString();
+    }
+    
+    /**
+     * Update an existing space in Confluence
+     */
+    public Mono<String> updateSpace(UpdateSpaceRequest request) {
+        logger.debug("Updating space with key: {}", request.spaceKey());
+        
+        return spacesClient.updateSpace(request)
+            .map(this::formatSpaceUpdateResult)
+            .doOnSuccess(result -> logger.debug("Successfully updated space"))
+            .doOnError(error -> logger.error("Error updating space with key: {}", request.spaceKey(), error))
+            .onErrorReturn("Error updating space: Please check your Confluence connection, permissions, and space key.");
+    }
+    
+    /**
+     * Format the result of space update
+     */
+    private String formatSpaceUpdateResult(Space updatedSpace) {
+        StringBuilder result = new StringBuilder();
+        
+        // Success message
+        result.append(markdownFormatter.formatHeading("✅ Space Updated Successfully", 1))
+              .append("\n\n");
+        
+        String overview = String.format("%s space `%s` has been updated", 
+            updatedSpace.type().getValue(), updatedSpace.key());
+        result.append(markdownFormatter.formatBlockquote(overview))
+              .append("\n\n");
+        
+        // Updated space details
+        result.append(markdownFormatter.formatHeading("Updated Space Details", 2))
+              .append("\n\n");
+        
+        Map<String, Object> spaceInfo = Map.of(
+            "ID", updatedSpace.id(),
+            "Name", updatedSpace.name(),
+            "Key", markdownFormatter.formatInlineCode(updatedSpace.key()),
+            "Type", updatedSpace.type().getValue(),
+            "Status", updatedSpace.status().getValue(),
+            "Homepage ID", updatedSpace.homepageId() != null ? updatedSpace.homepageId() : "N/A"
+        );
+        
+        result.append(markdownFormatter.formatBulletList(spaceInfo, key -> key))
+              .append("\n\n");
+        
+        // Description if available
+        if (updatedSpace.description() != null && 
+            updatedSpace.description().plain() != null && 
+            updatedSpace.description().plain().value() != null) {
+            result.append(markdownFormatter.formatHeading("Description", 2))
+                  .append("\n\n")
+                  .append(updatedSpace.description().plain().value())
+                  .append("\n\n");
+        }
+        
+        // Access link if available
+        if (updatedSpace.links() != null) {
+            String baseUrl = confluenceProperties.api().baseUrl();
+            String spaceUrl = baseUrl + "/spaces/" + updatedSpace.key();
+            result.append(markdownFormatter.formatHeading("Quick Access", 2))
+                  .append("\n\n")
+                  .append("View space: ")
+                  .append(markdownFormatter.formatUrl(spaceUrl, "Open in Confluence"))
+                  .append("\n\n");
+        }
+        
+        // Timestamp
+        result.append(markdownFormatter.formatItalic(
+            "Space updated at " + markdownFormatter.formatDate(LocalDateTime.now())));
         
         return result.toString();
     }

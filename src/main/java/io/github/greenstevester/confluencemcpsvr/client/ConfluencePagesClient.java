@@ -4,6 +4,7 @@ import io.github.greenstevester.confluencemcpsvr.model.common.PaginatedResponse;
 import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.GetPageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.dto.ListPagesRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.page.Page;
 import io.github.greenstevester.confluencemcpsvr.model.page.PageDetailed;
 import org.slf4j.Logger;
@@ -192,5 +193,63 @@ public class ConfluencePagesClient {
             .doOnSuccess(page -> logger.debug("Successfully created page: {}", 
                 page != null ? page.title() : "null"))
             .doOnError(error -> logger.error("Error creating page with title: {}", request.title(), error));
+    }
+    
+    /**
+     * Update an existing page in Confluence
+     */
+    public Mono<PageDetailed> updatePage(UpdatePageRequest request) {
+        logger.debug("Updating page with ID: {}", request.pageId());
+        
+        // Build the request body for Confluence API
+        var requestBody = new java.util.HashMap<String, Object>();
+        requestBody.put("type", "page");
+        
+        // Only include fields that are being updated
+        if (request.title() != null) {
+            requestBody.put("title", request.title());
+        }
+        
+        // Version information (required for updates)
+        var version = new java.util.HashMap<String, Object>();
+        version.put("number", request.version());
+        requestBody.put("version", version);
+        
+        // Parent page if specified
+        if (request.parentId() != null) {
+            var ancestors = new java.util.ArrayList<>();
+            var parent = new java.util.HashMap<String, String>();
+            parent.put("id", request.parentId());
+            ancestors.add(parent);
+            requestBody.put("ancestors", ancestors);
+        }
+        
+        // Page body content if provided
+        if (request.content() != null) {
+            var body = new java.util.HashMap<String, Object>();
+            var storage = new java.util.HashMap<String, String>();
+            storage.put("value", request.content());
+            storage.put("representation", request.contentRepresentation());
+            body.put("storage", storage);
+            requestBody.put("body", body);
+        }
+        
+        // Status if provided
+        if (request.status() != null) {
+            requestBody.put("status", request.status().getValue());
+        }
+        
+        String uri = API_PATH + "/content/" + request.pageId();
+        
+        logger.debug("Making PUT request to: {}", uri);
+        
+        return webClient.put()
+            .uri(uri)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(PageDetailed.class)
+            .doOnSuccess(page -> logger.debug("Successfully updated page: {}", 
+                page != null ? page.title() : "null"))
+            .doOnError(error -> logger.error("Error updating page with ID: {}", request.pageId(), error));
     }
 }

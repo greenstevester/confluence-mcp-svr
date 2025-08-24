@@ -1,6 +1,7 @@
 package io.github.greenstevester.confluencemcpsvr.tool;
 
 import io.github.greenstevester.confluencemcpsvr.model.dto.CreateSpaceRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdateSpaceRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceType;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluenceSpacesService;
@@ -158,6 +159,29 @@ public class ConfluenceSpacesTools {
     }
     
     /**
+     * Update an existing space in Confluence
+     */
+    public String updateSpace(UpdateSpaceToolRequest request) {
+        logger.debug("update_space tool called with: {}", request);
+        
+        try {
+            UpdateSpaceRequest updateRequest = UpdateSpaceRequest.builder()
+                .spaceKey(request.spaceKey())
+                .name(request.name())
+                .description(request.description())
+                .type(request.type())
+                .status(request.status())
+                .build();
+                
+            return spacesService.updateSpace(updateRequest).block(); // Block for synchronous tool execution
+            
+        } catch (Exception e) {
+            logger.error("Error in update_space tool", e);
+            return "Error updating space: " + e.getMessage();
+        }
+    }
+    
+    /**
      * Request object for list_spaces tool
      */
     public record ListSpacesRequest(
@@ -181,6 +205,17 @@ public class ConfluenceSpacesTools {
      */
     public record CreateSpaceToolRequest(
         String key,
+        String name,
+        String description,
+        SpaceType type,
+        SpaceStatus status
+    ) {}
+    
+    /**
+     * Request object for update_space tool
+     */
+    public record UpdateSpaceToolRequest(
+        String spaceKey,
         String name,
         String description,
         SpaceType type,

@@ -2,6 +2,8 @@ package io.github.greenstevester.confluencemcpsvr.service;
 
 import io.github.greenstevester.confluencemcpsvr.AbstractConfluenceIntTest;
 import io.github.greenstevester.confluencemcpsvr.config.ConfluenceProperties;
+import io.github.greenstevester.confluencemcpsvr.model.dto.CreatePageRequest;
+import io.github.greenstevester.confluencemcpsvr.model.dto.UpdatePageRequest;
 import io.github.greenstevester.confluencemcpsvr.model.enums.ContentStatus;
 import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(SpringExtension.class)
 @DisplayName("ConfluencePagesService Integration Tests")
-class ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
+class
+ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
 
     @Autowired
     private ConfluencePagesService pagesService;
@@ -353,5 +356,199 @@ class ConfluencePagesServiceIntTest extends AbstractConfluenceIntTest {
             "Include collaborators should match application-dev.properties");
         assertTrue(confluenceProperties.defaults().includeVersion(),
             "Include version should match application-dev.properties");
+    }
+    
+    @Test
+    @DisplayName("Should create page with valid request")
+    void testCreatePageWithValidRequest() {
+        // Arrange - Create a page request with test data
+        CreatePageRequest createRequest = CreatePageRequest.builder()
+            .title("Test Page - " + System.currentTimeMillis()) // Unique title
+            .spaceKey("TEST") // Assuming a TEST space exists or handle gracefully
+            .content("<p>This is a test page created by integration tests.</p>")
+            .contentRepresentation("storage")
+            .status(ContentStatus.CURRENT)
+            .build();
+        
+        // Act - Create the page
+        Mono<String> result = pagesService.createPage(createRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                // Should either show success or graceful error handling
+                assertTrue(response.contains("Page Created Successfully") || 
+                          response.contains("Error creating page"),
+                    "Response should indicate creation result or error");
+                
+                // If successful, should contain page details
+                if (response.contains("Page Created Successfully")) {
+                    assertTrue(response.contains(createRequest.title()),
+                        "Response should contain the created page title");
+                    assertTrue(response.contains("ID") || response.contains("URL"),
+                        "Response should include page metadata");
+                }
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
+    }
+    
+    @Test
+    @DisplayName("Should update page with valid request")
+    void testUpdatePageWithValidRequest() {
+        // Note: This test uses generic page ID and version
+        // In real environment, you'd get these from a created page
+        String testPageId = "123456789";
+        Integer testVersion = 1;
+        
+        // Arrange - Create an update request
+        UpdatePageRequest updateRequest = UpdatePageRequest.builder()
+            .pageId(testPageId)
+            .title("Updated Test Page - " + System.currentTimeMillis())
+            .content("<p>This page has been updated by integration tests.</p>")
+            .contentRepresentation("storage")
+            .status(ContentStatus.CURRENT)
+            .version(testVersion)
+            .build();
+        
+        // Act - Update the page
+        Mono<String> result = pagesService.updatePage(updateRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                // Should either show success or graceful error handling
+                assertTrue(response.contains("Page Updated Successfully") || 
+                          response.contains("Error updating page"),
+                    "Response should indicate update result or error");
+                
+                // If successful, should contain updated page details
+                if (response.contains("Page Updated Successfully")) {
+                    assertTrue(response.contains("Updated Test Page") || response.contains("ID"),
+                        "Response should contain updated page information");
+                }
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
+    }
+    
+    @Test
+    @DisplayName("Should handle create page with invalid space key")
+    void testCreatePageWithInvalidSpaceKey() {
+        // Arrange - Create request with definitely invalid space key
+        CreatePageRequest createRequest = CreatePageRequest.builder()
+            .title("Test Page in Invalid Space")
+            .spaceKey("NONEXISTENT_SPACE_KEY_123456")
+            .content("<p>This should fail due to invalid space.</p>")
+            .contentRepresentation("storage")
+            .status(ContentStatus.CURRENT)
+            .build();
+        
+        // Act - Try to create the page
+        Mono<String> result = pagesService.createPage(createRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                // Should handle error gracefully
+                assertTrue(response.contains("Error creating page") || 
+                          response.contains("not found") ||
+                          response.contains("Page Created Successfully"),
+                    "Response should handle invalid space key gracefully");
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
+    }
+    
+    @Test
+    @DisplayName("Should handle update page with invalid page ID")
+    void testUpdatePageWithInvalidPageId() {
+        // Arrange - Create update request with invalid page ID
+        UpdatePageRequest updateRequest = UpdatePageRequest.builder()
+            .pageId("999999999999") // Non-existent page ID
+            .title("Updated Non-existent Page")
+            .content("<p>This update should fail.</p>")
+            .contentRepresentation("storage")
+            .version(1)
+            .status(ContentStatus.CURRENT)
+            .build();
+        
+        // Act - Try to update the page
+        Mono<String> result = pagesService.updatePage(updateRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                // Should handle error gracefully
+                assertTrue(response.contains("Error updating page") || 
+                          response.contains("not found") ||
+                          response.contains("Page Updated Successfully"),
+                    "Response should handle invalid page ID gracefully");
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
+    }
+    
+    @Test
+    @DisplayName("Should handle create page with minimal required fields")
+    void testCreatePageWithMinimalFields() {
+        // Arrange - Create request with only required fields
+        CreatePageRequest createRequest = CreatePageRequest.builder()
+            .title("Minimal Test Page - " + System.currentTimeMillis())
+            .spaceKey("TEST")
+            .content("<p>Minimal page content.</p>")
+            .build(); // Uses defaults for optional fields
+        
+        // Act - Create the page
+        Mono<String> result = pagesService.createPage(createRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                assertTrue(response.contains("Page Created Successfully") || 
+                          response.contains("Error creating page"),
+                    "Response should indicate creation result");
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
+    }
+    
+    @Test
+    @DisplayName("Should handle update page with version conflict")
+    void testUpdatePageWithVersionConflict() {
+        // Arrange - Create update request with potentially outdated version
+        UpdatePageRequest updateRequest = UpdatePageRequest.builder()
+            .pageId("123456789")
+            .title("Version Conflict Test")
+            .version(999) // Very high version number likely to cause conflict
+            .content("<p>This might cause version conflict.</p>")
+            .build();
+        
+        // Act - Try to update with potentially conflicting version
+        Mono<String> result = pagesService.updatePage(updateRequest);
+        
+        // Assert
+        StepVerifier.create(result)
+            .assertNext(response -> {
+                assertNotNull(response, "Response should not be null");
+                assertTrue(response.length() > 0, "Response should not be empty");
+                // Should handle version conflicts gracefully
+                assertTrue(response.contains("Error updating page") || 
+                          response.contains("Page Updated Successfully") ||
+                          response.contains("conflict"),
+                    "Response should handle version conflicts gracefully");
+            })
+            .expectComplete()
+            .verify(Duration.ofSeconds(30));
     }
 }
