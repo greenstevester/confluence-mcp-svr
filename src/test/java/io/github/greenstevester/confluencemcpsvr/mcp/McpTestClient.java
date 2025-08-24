@@ -1,9 +1,11 @@
 package io.github.greenstevester.confluencemcpsvr.mcp;
 
 import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.ServerParameters;
 import io.modelcontextprotocol.client.transport.StdioClientTransport;
-import io.modelcontextprotocol.schema.*;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +23,11 @@ public class McpTestClient implements AutoCloseable {
     
     private static final Logger logger = LoggerFactory.getLogger(McpTestClient.class);
     
-    private final McpClient client;
+    private final McpSyncClient client;
     private final StdioClientTransport transport;
     private volatile boolean initialized = false;
     
-    private McpTestClient(McpClient client, StdioClientTransport transport) {
+    private McpTestClient(McpSyncClient client, StdioClientTransport transport) {
         this.client = client;
         this.transport = transport;
     }
@@ -52,7 +54,7 @@ public class McpTestClient implements AutoCloseable {
             .build();
         
         StdioClientTransport transport = new StdioClientTransport(serverParams);
-        McpClient client = McpClient.sync(transport)
+        McpSyncClient client = McpClient.sync(transport)
             .loggingConsumer(notification -> 
                 logger.info("Server log [{}]: {}", notification.level(), notification.data()))
             .build();

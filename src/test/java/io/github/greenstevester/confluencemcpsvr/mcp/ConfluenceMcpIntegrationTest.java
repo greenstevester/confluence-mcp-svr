@@ -1,6 +1,7 @@
 package io.github.greenstevester.confluencemcpsvr.mcp;
 
-import io.modelcontextprotocol.schema.*;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

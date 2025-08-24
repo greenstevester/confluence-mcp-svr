@@ -69,6 +69,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'io.projectreactor:reactor-test'
 
+	// MCP SDK for integration testing
+	testImplementation 'io.modelcontextprotocol.sdk:mcp'
+	
 	testImplementation 'org.wiremock:wiremock-standalone:3.3.1'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
