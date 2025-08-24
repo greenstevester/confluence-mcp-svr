@@ -7,7 +7,7 @@ import io.github.greenstevester.confluencemcpsvr.model.enums.PageSortOrder;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluencePagesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-// import org.springframework.ai.annotation.Tool;
+import io.github.greenstevester.confluencemcpsvr.annotation.AITool;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +29,7 @@ public class ConfluencePagesTools {
     /**
      * List Confluence pages with optional filtering
      */
+    @AITool(name = "list-pages", description = "List Confluence pages with optional filtering")
     public String listPages(ListPagesRequest request) {
         logger.debug("list_pages tool called with: {}", request);
         
@@ -51,6 +52,7 @@ public class ConfluencePagesTools {
     /**
      * Get detailed information about a specific Confluence page
      */
+    @AITool(name = "get-page", description = "Get detailed information about a specific Confluence page")
     public String getPage(GetPageRequest request) {
         logger.debug("get_page tool called with: {}", request);
         
@@ -66,6 +68,7 @@ public class ConfluencePagesTools {
     /**
      * Create a new page in Confluence
      */
+    @AITool(name = "create-page", description = "Create a new page in Confluence")
     public String createPage(CreatePageToolRequest request) {
         logger.debug("create_page tool called with: {}", request);
         
@@ -90,6 +93,7 @@ public class ConfluencePagesTools {
     /**
      * Update an existing page in Confluence
      */
+    @AITool(name = "update-page", description = "Update an existing page in Confluence")
     public String updatePage(UpdatePageToolRequest request) {
         logger.debug("update_page tool called with: {}", request);
         
