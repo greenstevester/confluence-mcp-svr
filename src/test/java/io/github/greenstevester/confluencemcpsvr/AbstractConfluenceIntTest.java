@@ -15,7 +15,7 @@ import java.util.Map;
  * Provides common functionality for loading environment variables and test configuration.
  */
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 public abstract class AbstractConfluenceIntTest {
 
     private static final Map<String, String> ENV_TO_PROPERTY_MAP = Map.of(

@@ -19,7 +19,7 @@ Copy the example development configuration:
 Then edit `application-local.properties` with your credentials:
    ```properties
    # Confluence API Configuration
-   confluence.api.base-url=https://your-site-name.atlassian.net
+   confluence.api.base-url=https://your-site.atlassian.net
    confluence.api.username=your-email@example.com
    confluence.api.token=your-api-token-here
    ```
@@ -69,9 +69,9 @@ Edit `src/main/resources/application.properties` directly (not recommended for p
 
 The application uses these environment variables:
 ```bash
-export ATLASSIAN_SITE_NAME=your-site-name      
-export ATLASSIAN_USER_EMAIL=your-email@domain.com
-export ATLASSIAN_API_TOKEN=your-api-token
+export CONFLUENCE_API_BASE_URL=https://your-site.atlassian.net
+export CONFLUENCE_API_USERNAME=your-email@domain.com
+export CONFLUENCE_API_TOKEN=your-api-token
 ```
 
 ### Advanced Configuration
@@ -80,9 +80,9 @@ All configuration options available in `application.properties`:
 
 ```properties
 # Confluence API Configuration
-confluence.api.base-url={ATLASSIAN_SITE_NAME}
-confluence.api.username=${ATLASSIAN_USER_EMAIL}
-confluence.api.token=${ATLASSIAN_API_TOKEN}
+confluence.api.base-url=${CONFLUENCE_API_BASE_URL}
+confluence.api.username=${CONFLUENCE_API_USERNAME}
+confluence.api.token=${CONFLUENCE_API_TOKEN}
 confluence.api.timeout=30s
 confluence.api.max-connections=20
 confluence.api.retry-attempts=3
@@ -256,7 +256,7 @@ This server follows a "Minimal Interface, Maximal Detail" approach:
 
 2. **Authentication errors:**
     - Verify your API token is valid and not expired
-    - Ensure you're using the correct site name (just the subdomain)
+    - Ensure you're using the correct base URL (full URL like https://your-site.atlassian.net)
     - Check that your user has appropriate Confluence permissions
 
 3. **Build failures:**
@@ -265,7 +265,7 @@ This server follows a "Minimal Interface, Maximal Detail" approach:
 
 4. **Runtime configuration issues:**
     - Check active profile: Add `-Dspring.profiles.active=dev` for development
-    - Verify environment variables are set: `echo $ATLASSIAN_SITE_NAME`
+    - Verify environment variables are set: `echo $CONFLUENCE_API_BASE_URL`
 
 ## Running in IntelliJ IDEA
 

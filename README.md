@@ -40,9 +40,9 @@ To get this going, you've got options:
 
    **Option A: Using Environment Variables (Recommended for production)**
    ```bash
-   export ATLASSIAN_SITE_NAME=your-site-name  # Just the subdomain, not the full URL
-   export ATLASSIAN_USER_EMAIL=your-email@example.com
-   export ATLASSIAN_API_TOKEN=your-api-token-here
+   export CONFLUENCE_API_BASE_URL=https://your-site.atlassian.net  # Full URL to your Confluence instance
+   export CONFLUENCE_API_USERNAME=your-email@example.com
+   export CONFLUENCE_API_TOKEN=your-api-token-here
    ```
 5. **Run the application:**
 

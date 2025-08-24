@@ -55,9 +55,9 @@ Edit `.env` with your Confluence API credentials:
 
 ```env
 # Required Confluence API Configuration
-ATLASSIAN_SITE_NAME=your-site-name
-ATLASSIAN_USER_EMAIL=your-email@example.com
-ATLASSIAN_API_TOKEN=your-api-token-here
+CONFLUENCE_API_BASE_URL=https://your-site.atlassian.net
+CONFLUENCE_API_USERNAME=your-email@example.com
+CONFLUENCE_API_TOKEN=your-api-token-here
 ```
 
 Generate an API token at: https://id.atlassian.com/manage-profile/security/api-tokens

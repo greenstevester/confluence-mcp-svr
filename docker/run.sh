@@ -84,9 +84,9 @@ validate_env() {
     local MISSING_VARS=()
     
     # Check required variables
-    [ -z "${ATLASSIAN_SITE_NAME:-}" ] && MISSING_VARS+=("ATLASSIAN_SITE_NAME")
-    [ -z "${ATLASSIAN_USER_EMAIL:-}" ] && MISSING_VARS+=("ATLASSIAN_USER_EMAIL")
-    [ -z "${ATLASSIAN_API_TOKEN:-}" ] && MISSING_VARS+=("ATLASSIAN_API_TOKEN")
+    [ -z "${CONFLUENCE_API_BASE_URL:-}" ] && MISSING_VARS+=("CONFLUENCE_API_BASE_URL")
+    [ -z "${CONFLUENCE_API_USERNAME:-}" ] && MISSING_VARS+=("CONFLUENCE_API_USERNAME")
+    [ -z "${CONFLUENCE_API_TOKEN:-}" ] && MISSING_VARS+=("CONFLUENCE_API_TOKEN")
     
     if [ ${#MISSING_VARS[@]} -gt 0 ]; then
         echo -e "${RED}Error: Missing required environment variables:${NC}"

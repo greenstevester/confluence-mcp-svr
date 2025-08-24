@@ -98,13 +98,13 @@ setup_environment() {
     # Get Atlassian site name
     read -p "Enter your Atlassian site name (e.g., 'mycompany' for mycompany.atlassian.net): " site_name
     if [ -n "$site_name" ]; then
-        sed -i.bak "s/ATLASSIAN_SITE_NAME=.*/ATLASSIAN_SITE_NAME=$site_name/" .env
+        sed -i.bak "s/CONFLUENCE_API_BASE_URL=.*/CONFLUENCE_API_BASE_URL=https://$site_name.atlassian.net/" .env
     fi
     
     # Get user email
     read -p "Enter your Atlassian user email: " user_email
     if [ -n "$user_email" ]; then
-        sed -i.bak "s/ATLASSIAN_USER_EMAIL=.*/ATLASSIAN_USER_EMAIL=$user_email/" .env
+        sed -i.bak "s/CONFLUENCE_API_USERNAME=.*/CONFLUENCE_API_USERNAME=$user_email/" .env
     fi
     
     # Get API token (hidden input)
@@ -112,7 +112,7 @@ setup_environment() {
     read -s api_token
     echo ""
     if [ -n "$api_token" ]; then
-        sed -i.bak "s/ATLASSIAN_API_TOKEN=.*/ATLASSIAN_API_TOKEN=$api_token/" .env
+        sed -i.bak "s/CONFLUENCE_API_TOKEN=.*/CONFLUENCE_API_TOKEN=$api_token/" .env
     fi
     
     # Clean up backup files
