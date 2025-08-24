@@ -12,6 +12,7 @@ import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry for discovering and managing @AITool annotated methods
@@ -24,7 +25,7 @@ public class AIToolRegistry {
     @Autowired
     private ApplicationContext applicationContext;
     
-    private final Map<String, AIToolDefinition> tools = new LinkedHashMap<>();
+    private final Map<String, AIToolDefinition> tools = new ConcurrentHashMap<>();
     
     /**
      * Represents a discovered AI tool

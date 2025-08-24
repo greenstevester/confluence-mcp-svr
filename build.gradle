@@ -37,15 +37,9 @@ dependencies {
 	// MCP WebMVC Transport (required for Spring AI MCP WebMVC)
 	implementation 'io.modelcontextprotocol.sdk:mcp-spring-webmvc'
 	
-	// HTTP Client for Confluence API
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	
 	// JSON processing
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-	
-	// Validation
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	
 	// Utilities
 	implementation 'org.apache.commons:commons-lang3:3.18.0'

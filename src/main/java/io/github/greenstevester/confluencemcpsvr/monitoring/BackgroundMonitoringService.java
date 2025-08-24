@@ -2,6 +2,7 @@ package io.github.greenstevester.confluencemcpsvr.monitoring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * Background service that periodically prints system and MCP endpoint statistics
  */
 @Service
-public class BackgroundMonitoringService implements ApplicationListener<ApplicationReadyEvent> {
+public class BackgroundMonitoringService implements ApplicationListener<ApplicationReadyEvent>, DisposableBean {
     
     private static final Logger logger = LoggerFactory.getLogger(BackgroundMonitoringService.class);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -42,36 +43,42 @@ public class BackgroundMonitoringService implements ApplicationListener<Applicat
     @Autowired
     private Environment environment;
     
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-        r -> {
-            Thread t = new Thread(r, "mcp-monitor");
-            t.setDaemon(true);
-            return t;
-        }
-    );
+    private ScheduledExecutorService scheduler;
+    private volatile boolean isSchedulerStarted = false;
     
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        // Check if monitoring is enabled (can be disabled in production)
-        boolean monitoringEnabled = environment.getProperty("mcp.monitoring.enabled", Boolean.class, true);
-        
-        if (!monitoringEnabled) {
-            logger.info("Background monitoring disabled via configuration");
-            return;
+        // Prevent multiple scheduler creations
+        synchronized (this) {
+            if (isSchedulerStarted) {
+                logger.warn("Background monitoring service already started, ignoring duplicate start request");
+                return;
+            }
+            
+            // Check if monitoring is enabled (can be disabled in production)
+            boolean monitoringEnabled = environment.getProperty("mcp.monitoring.enabled", Boolean.class, true);
+            
+            if (!monitoringEnabled) {
+                logger.info("Background monitoring disabled via configuration");
+                return;
+            }
+            
+            // Create scheduler only when needed
+            scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "mcp-monitor");
+                t.setDaemon(true);
+                return t;
+            });
+            
+            int intervalSeconds = environment.getProperty("mcp.monitoring.interval", Integer.class, 15);
+            
+            logger.info("Starting background monitoring service (interval: {}s)", intervalSeconds);
+            
+            // Start monitoring after a 10-second delay to let the application fully initialize
+            scheduler.scheduleAtFixedRate(this::printMonitoringReport, 10, intervalSeconds, TimeUnit.SECONDS);
+            
+            isSchedulerStarted = true;
         }
-        
-        int intervalSeconds = environment.getProperty("mcp.monitoring.interval", Integer.class, 15);
-        
-        logger.info("Starting background monitoring service (interval: {}s)", intervalSeconds);
-        
-        // Start monitoring after a 10-second delay to let the application fully initialize
-        scheduler.scheduleAtFixedRate(this::printMonitoringReport, 10, intervalSeconds, TimeUnit.SECONDS);
-        
-        // Shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down background monitoring service");
-            scheduler.shutdown();
-        }));
     }
     
     private void printMonitoringReport() {
@@ -128,5 +135,29 @@ public class BackgroundMonitoringService implements ApplicationListener<Applicat
         }
         
         return color + String.format("%.1f%%", percentage) + ANSI_RESET;
+    }
+    
+    @Override
+    public void destroy() throws Exception {
+        synchronized (this) {
+            if (scheduler != null && !scheduler.isShutdown()) {
+                logger.info("Shutting down background monitoring service via DisposableBean");
+                scheduler.shutdown();
+                
+                try {
+                    // Wait a bit for graceful shutdown
+                    if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                        logger.warn("Forcing shutdown of background monitoring service");
+                        scheduler.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    logger.warn("Interrupted while waiting for scheduler shutdown");
+                    scheduler.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+                
+                isSchedulerStarted = false;
+            }
+        }
     }
 }

@@ -1,5 +1,8 @@
 package io.github.greenstevester.confluencemcpsvr.mcp;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.greenstevester.confluencemcpsvr.mcp.AIToolRegistry.AIToolDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ public class AIToolCallback implements ToolCallback {
     private static final Logger logger = LoggerFactory.getLogger(AIToolCallback.class);
     
     private final AIToolDefinition toolDefinition;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     
     public AIToolCallback(AIToolDefinition toolDefinition) {
         this.toolDefinition = toolDefinition;
@@ -72,34 +76,21 @@ public class AIToolCallback implements ToolCallback {
     }
     
     private Map<String, Object> parseJsonInput(String toolInput) {
-        Map<String, Object> parameters = new LinkedHashMap<>();
-        
         if (toolInput == null || toolInput.trim().isEmpty()) {
-            return parameters;
+            return new LinkedHashMap<>();
         }
         
-        // Simple JSON parsing for our use case
-        // In a production system, you'd want to use a proper JSON parser
         try {
-            String input = toolInput.trim();
-            if (input.startsWith("{") && input.endsWith("}")) {
-                input = input.substring(1, input.length() - 1); // Remove { }
-                
-                String[] pairs = input.split(",");
-                for (String pair : pairs) {
-                    String[] keyValue = pair.split(":", 2);
-                    if (keyValue.length == 2) {
-                        String key = keyValue[0].trim().replaceAll("\"", "");
-                        String value = keyValue[1].trim().replaceAll("\"", "");
-                        parameters.put(key, value);
-                    }
-                }
-            }
+            // Use Jackson ObjectMapper for secure JSON parsing
+            TypeReference<Map<String, Object>> typeRef = new TypeReference<Map<String, Object>>() {};
+            return objectMapper.readValue(toolInput.trim(), typeRef);
+        } catch (JsonProcessingException e) {
+            logger.warn("Failed to parse JSON input: '{}'. Error: {}. Using empty parameters.", toolInput, e.getMessage());
+            return new LinkedHashMap<>();
         } catch (Exception e) {
-            logger.warn("Failed to parse JSON input: {}, using empty parameters", toolInput);
+            logger.error("Unexpected error parsing JSON input: '{}'. Error: {}. Using empty parameters.", toolInput, e.getMessage());
+            return new LinkedHashMap<>();
         }
-        
-        return parameters;
     }
     
     private Object executeToolMethod(Map<String, Object> parameters) throws Exception {
