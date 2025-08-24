@@ -1,0 +1,45 @@
+version: '3.9'
+
+# Development override configuration
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  confluence-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - LOGGING_LEVEL_ROOT=INFO
+      - LOGGING_LEVEL_IO_GITHUB_GREENSTEVESTER=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_AI=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE=DEBUG
+      
+      # Enable Spring Boot DevTools
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      
+      # JVM Debug options
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      
+      # Actuator endpoints for development
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+    ports:
+      - "8081:8081"
+      - "5005:5005"  # Debug port
+      - "35729:35729" # LiveReload port
+    volumes:
+      # Mount source code for hot reload (if using DevTools)
+      - ./src:/app/src:ro
+      - ./build/classes:/app/classes:ro
+      
+      # Mount gradle cache to speed up rebuilds
+      - ~/.gradle:/home/spring/.gradle:cached
+      
+      # Mount application properties for easy configuration changes
+      - ./src/main/resources/application.properties:/app/config/application.properties:ro
+      - ./src/main/resources/application-dev.properties:/app/config/application-dev.properties:ro
+    stdin_open: true
+    tty: true

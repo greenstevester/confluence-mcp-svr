@@ -1,0 +1,60 @@
+# Production Dockerfile for Spring Boot Confluence MCP Server
+# Optimized for minimal size and security
+
+# Stage 1: Build stage
+FROM eclipse-temurin:21-jdk-alpine AS builder
+
+WORKDIR /app
+
+# Copy gradle files
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+
+# Download dependencies
+RUN ./gradlew dependencies --no-daemon
+
+# Copy source
+COPY src src
+
+# Build with production optimizations
+RUN ./gradlew bootJar --no-daemon \
+    -Dorg.gradle.daemon=false \
+    -Dorg.gradle.parallel=false \
+    -Dorg.gradle.caching=false && \
+    java -Djarmode=layertools -jar build/libs/*.jar extract
+
+# Stage 2: Minimal runtime with distroless
+FROM gcr.io/distroless/java21-debian12:nonroot
+
+WORKDIR /app
+
+# Copy application layers
+COPY --from=builder --chown=nonroot:nonroot /app/dependencies/ ./
+COPY --from=builder --chown=nonroot:nonroot /app/spring-boot-loader/ ./
+COPY --from=builder --chown=nonroot:nonroot /app/snapshot-dependencies/ ./
+COPY --from=builder --chown=nonroot:nonroot /app/application/ ./
+
+# Application port
+EXPOSE 8081
+
+# Production JVM settings
+ENV JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:InitialRAMPercentage=50.0 \
+    -XX:+UseG1GC \
+    -XX:+UseStringDeduplication \
+    -XX:+ExitOnOutOfMemoryError \
+    -XX:+AlwaysPreTouch \
+    -Xlog:gc*:file=/app/logs/gc.log:time,uptime:filecount=5,filesize=10M \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.backgroundpreinitializer.ignore=true"
+
+# Spring profile
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Run as non-root (uid 65532)
+USER nonroot
+
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

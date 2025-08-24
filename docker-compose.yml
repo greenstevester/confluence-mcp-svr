@@ -1,0 +1,97 @@
+version: '3.9'
+
+services:
+  confluence-mcp-server:
+    image: confluence-mcp-svr:${VERSION:-latest}
+    container_name: confluence-mcp-server
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile}
+      cache_from:
+        - confluence-mcp-svr:latest
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    ports:
+      - "${SERVER_PORT:-8081}:8081"
+    environment:
+      # Spring Boot Configuration
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-default}
+      - SERVER_PORT=${SERVER_PORT:-8081}
+      
+      # Confluence API Configuration
+      - ATLASSIAN_SITE_NAME=${ATLASSIAN_SITE_NAME}
+      - ATLASSIAN_USER_EMAIL=${ATLASSIAN_USER_EMAIL}
+      - ATLASSIAN_API_TOKEN=${ATLASSIAN_API_TOKEN}
+      - CONFLUENCE_API_BASE_URL=${CONFLUENCE_API_BASE_URL:-}
+      - CONFLUENCE_API_USERNAME=${CONFLUENCE_API_USERNAME:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      
+      # JVM Memory Settings
+      - JAVA_OPTS=${JAVA_OPTS:--XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0}
+      
+      # Logging Configuration
+      - LOGGING_LEVEL_ROOT=${LOGGING_LEVEL_ROOT:-INFO}
+      - LOGGING_LEVEL_IO_GITHUB_GREENSTEVESTER=${LOGGING_LEVEL_APP:-INFO}
+      
+      # MCP Server Configuration
+      - MCP_SERVER_NAME=${MCP_SERVER_NAME:-mcp-server-atlassian-confluence}
+      - MCP_SERVER_VERSION=${MCP_SERVER_VERSION:-2.0.1}
+    volumes:
+      # Application configuration (optional external config)
+      - ./config:/app/config:ro
+      
+      # Logs volume for persistent logging
+      - confluence-mcp-logs:/app/logs
+      
+      # Temp directory
+      - confluence-mcp-temp:/app/temp
+    networks:
+      - confluence-mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=confluence-mcp-server"
+
+  # Optional: Development database for caching (if needed in future)
+  # Uncomment if you want to add Redis for caching Confluence data
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: confluence-mcp-redis
+  #   ports:
+  #     - "${REDIS_PORT:-6379}:6379"
+  #   volumes:
+  #     - confluence-mcp-redis-data:/data
+  #   networks:
+  #     - confluence-mcp-network
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+networks:
+  confluence-mcp-network:
+    driver: bridge
+    name: confluence-mcp-network
+
+volumes:
+  confluence-mcp-logs:
+    name: confluence-mcp-logs
+  confluence-mcp-temp:
+    name: confluence-mcp-temp
+  # confluence-mcp-redis-data:
+  #   name: confluence-mcp-redis-data
