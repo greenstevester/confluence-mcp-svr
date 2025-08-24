@@ -82,10 +82,13 @@ case $mode_choice in
         
         npx @modelcontextprotocol/inspector \
             java \
-            -Dspring.ai.mcp.server.stdio=true \
-            -Dspring.main.web-application-type=none \
-            -Dspring.main.banner-mode=off \
-            -Dlogging.pattern.console= \
+            -Dspring.profiles.active=stdio \
+            -Djava.awt.headless=true \
+            -XX:-PrintGCDetails \
+            -XX:-PrintGCTimeStamps \
+            -XX:+UseSerialGC \
+            -Xms256m \
+            -Xmx512m \
             -jar "$JAR_FILE"
         ;;
     2)
@@ -133,10 +136,13 @@ case $mode_choice in
         echo -e "${YELLOW}Invalid choice. Defaulting to STDIO mode.${NC}"
         npx @modelcontextprotocol/inspector \
             java \
-            -Dspring.ai.mcp.server.stdio=true \
-            -Dspring.main.web-application-type=none \
-            -Dspring.main.banner-mode=off \
-            -Dlogging.pattern.console= \
+            -Dspring.profiles.active=stdio \
+            -Djava.awt.headless=true \
+            -XX:-PrintGCDetails \
+            -XX:-PrintGCTimeStamps \
+            -XX:+UseSerialGC \
+            -Xms256m \
+            -Xmx512m \
             -jar "$JAR_FILE"
         ;;
 esac
