@@ -123,6 +123,24 @@ src/
 └── test/                                           # Test classes
 ```
 
+The project is currently using a mixed approach which is actually a valid architectural pattern:
+
+1. WebFlux for External API Calls: The Confluence clients use WebFlux (WebClient) for making HTTP calls to the Confluence API because:
+   - WebFlux is non-blocking and more efficient for external API calls
+   - Better handling of timeouts and retries
+   - Reactive streams work well with API integration patterns
+2. WebMVC for MCP Server: The MCP server uses WebMVC because:
+   - Spring AI MCP Server supports both WebMVC and WebFlux transports
+   - WebMVC is simpler for traditional HTTP endpoints and SSE
+   - The MCP protocol doesn't require reactive streams
+   - Most Spring Boot applications default to WebMVC
+
+This is a common hybrid pattern where:
+- Internal/MCP endpoints → WebMVC (traditional REST)
+- External API calls → WebFlux (reactive HTTP client)
+
+
+
 ### Adding New Tools
 
 To add new MCP tools for Confluence functionality:
