@@ -11,4 +11,4 @@
    |_|  |_|\____|_|     |____/ \___|_|    \_/ \___|_|   
 
 :: Confluence MCP Server :: (v${application.version:0.0.1-SNAPSHOT})
-:: Running on port ${server.port:8081} ::
+:: Running on port ${server.port:8081} (with dynamic fallback) ::
