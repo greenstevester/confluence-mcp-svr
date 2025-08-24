@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class ConfluencePagesClient {
     
     private static final Logger logger = LoggerFactory.getLogger(ConfluencePagesClient.class);
-    private static final String API_PATH = "/wiki/api/v2";
+    private static final String API_PATH = "/rest/api";
     
     private final WebClient webClient;
     
@@ -44,10 +44,10 @@ public class ConfluencePagesClient {
             queryParams.put("id", request.id());
         }
         if (request.spaceId() != null && !request.spaceId().isEmpty()) {
-            queryParams.put("space-id", request.spaceId());
+            queryParams.put("spaceKey", request.spaceId());
         }
         if (request.parentId() != null) {
-            queryParams.add("parent-id", request.parentId());
+            queryParams.add("ancestor", request.parentId());
         }
         if (request.sort() != null) {
             queryParams.add("sort", request.sort().getValue());
@@ -62,7 +62,7 @@ public class ConfluencePagesClient {
             queryParams.add("title", request.title());
         }
         if (request.bodyFormat() != null) {
-            queryParams.add("body-format", request.bodyFormat().getValue());
+            queryParams.add("expand", "body." + request.bodyFormat().getValue());
         }
         if (request.cursor() != null) {
             queryParams.add("cursor", request.cursor());
@@ -71,7 +71,7 @@ public class ConfluencePagesClient {
             queryParams.add("limit", request.limit().toString());
         }
         
-        String uri = UriComponentsBuilder.fromPath(API_PATH + "/pages")
+        String uri = UriComponentsBuilder.fromPath(API_PATH + "/content")
             .queryParams(queryParams)
             .toUriString();
             
@@ -95,10 +95,10 @@ public class ConfluencePagesClient {
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         
         if (request.bodyFormat() != null) {
-            queryParams.add("body-format", request.bodyFormat().getValue());
+            queryParams.add("expand", "body." + request.bodyFormat().getValue());
         }
         if (request.getDraft() != null) {
-            queryParams.add("get-draft", request.getDraft().toString());
+            queryParams.add("status", request.getDraft() ? "draft" : "current");
         }
         if (request.status() != null && !request.status().isEmpty()) {
             String statusValues = request.status().stream()
@@ -128,7 +128,7 @@ public class ConfluencePagesClient {
             queryParams.add("include-collaborators", request.includeCollaborators().toString());
         }
         
-        String uri = UriComponentsBuilder.fromPath(API_PATH + "/pages/" + pageId)
+        String uri = UriComponentsBuilder.fromPath(API_PATH + "/content/" + pageId)
             .queryParams(queryParams)
             .toUriString();
             

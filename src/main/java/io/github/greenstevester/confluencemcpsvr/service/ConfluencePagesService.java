@@ -75,7 +75,8 @@ public class ConfluencePagesService {
         return pagesClient.listPages(request)
             .map(this::formatPagesList)
             .doOnSuccess(result -> logger.debug("Formatted pages list response"))
-            .doOnError(error -> logger.error("Error listing pages", error));
+            .doOnError(error -> logger.error("Error listing pages", error))
+            .onErrorReturn("Error listing pages: Please check your Confluence connection and parameters.");
     }
     
     /**
@@ -104,7 +105,8 @@ public class ConfluencePagesService {
         return pagesClient.getPage(pageId, request)
             .map(this::formatPageDetails)
             .doOnSuccess(result -> logger.debug("Formatted page details response"))
-            .doOnError(error -> logger.error("Error getting page {}", pageId, error));
+            .doOnError(error -> logger.error("Error getting page {}", pageId, error))
+            .onErrorReturn("Error getting page: Please check your Confluence connection and page ID.");
     }
     
     /**

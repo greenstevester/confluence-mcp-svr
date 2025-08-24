@@ -48,6 +48,11 @@ dependencies {
 	// Markdown processing (for HTML to Markdown conversion)
 	implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
 	
+	// MacOS native DNS resolver (platform-specific)
+	if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+		implementation 'io.netty:netty-resolver-dns-native-macos'
+	}
+	
 	// Logging
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 	
