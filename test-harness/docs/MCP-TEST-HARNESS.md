@@ -60,6 +60,7 @@ Comprehensive automated tests covering all MCP functionality:
 ./test-harness/scripts/run-integration-tests.sh
 
 # Run with options
+
 ./test-harness/scripts/run-integration-tests.sh --verbose
 ./test-harness/scripts/run-integration-tests.sh --pattern "ConfluenceSpaces"
 ./test-harness/scripts/run-integration-tests.sh --skip-build
