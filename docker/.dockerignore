@@ -1,0 +1,80 @@
+# Docker build context ignore file
+
+# Git
+.git
+.gitignore
+
+# Build artifacts
+build/
+!build/libs/*.jar
+.gradle/
+out/
+target/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+bin/
+
+# Documentation
+*.md
+docs/
+!README.md
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker files (not needed in build context)
+docker/
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Test files (optional, uncomment if you want to exclude tests from production builds)
+# src/test/
+
+# MacOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+
+# Application logs
+logs/
+*.log
+
+# Node modules (if any frontend assets)
+node_modules/
+
+# Python (if any scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# Backup files
+*.bak
+*.backup
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar

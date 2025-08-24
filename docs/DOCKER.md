@@ -7,7 +7,7 @@ This document provides comprehensive instructions for running the Confluence MCP
 For first-time setup, use the interactive quick start wizard:
 
 ```bash
-./docker-quickstart.sh
+./docker/docker-quickstart.sh
 ```
 
 This will guide you through:
@@ -26,19 +26,19 @@ This will guide you through:
 
 ```
 confluence-mcp-svr/
-├── Dockerfile                 # Development/standard Docker image
-├── Dockerfile.prod           # Production-optimized Docker image  
-├── docker-compose.yml        # Main compose configuration
-├── docker-compose.dev.yml    # Development overrides
-├── .dockerignore            # Build context exclusions
 ├── .env.example             # Environment template
-├── docker/                  # Docker utility scripts
+├── docker/                  # Docker configuration and scripts
+│   ├── Dockerfile          # Development/standard Docker image
+│   ├── Dockerfile.prod     # Production-optimized Docker image
+│   ├── docker-compose.yml  # Main compose configuration
+│   ├── docker-compose.dev.yml # Development overrides
+│   ├── .dockerignore       # Build context exclusions
+│   ├── docker-quickstart.sh # Interactive setup wizard
 │   ├── build.sh            # Build Docker images
 │   ├── run.sh              # Start containers
 │   ├── stop.sh             # Stop and clean up
 │   ├── logs.sh             # View container logs
 │   └── debug.sh            # Remote debugging setup
-└── docker-quickstart.sh     # Interactive setup wizard
 ```
 
 ## Configuration
@@ -74,14 +74,14 @@ Set via `SPRING_PROFILES_ACTIVE` in `.env`
 
 ## Docker Images
 
-### Development Image (Dockerfile)
+### Development Image (docker/Dockerfile)
 
 - Based on Eclipse Temurin JRE Alpine
 - Includes debugging tools (curl, jq, tini)
 - Supports hot reload and remote debugging
 - Image size: ~250MB
 
-### Production Image (Dockerfile.prod)
+### Production Image (docker/Dockerfile.prod)
 
 - Based on Google Distroless
 - Minimal attack surface

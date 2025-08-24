@@ -86,8 +86,8 @@ check_prerequisites() {
     fi
     
     # Check if Dockerfile exists
-    if [ ! -f "$DOCKERFILE" ]; then
-        echo -e "${RED}Error: $DOCKERFILE not found${NC}"
+    if [ ! -f "$SCRIPT_DIR/$DOCKERFILE" ]; then
+        echo -e "${RED}Error: $SCRIPT_DIR/$DOCKERFILE not found${NC}"
         exit 1
     fi
     
@@ -102,11 +102,11 @@ build_image() {
     DOCKER_BUILDKIT=1 docker build \
         $NO_CACHE \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
-        -f "$DOCKERFILE" \
+        -f "$SCRIPT_DIR/$DOCKERFILE" \
         -t "$IMAGE_NAME:$IMAGE_TAG" \
         -t "$IMAGE_NAME:latest" \
         --progress=plain \
-        .
+        "$PROJECT_ROOT"
     
     BUILD_STATUS=$?
     

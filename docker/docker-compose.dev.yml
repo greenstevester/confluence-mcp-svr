@@ -6,8 +6,8 @@ version: '3.9'
 services:
   confluence-mcp-server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
       target: runtime
     environment:
       - SPRING_PROFILES_ACTIVE=dev
@@ -32,14 +32,14 @@ services:
       - "35729:35729" # LiveReload port
     volumes:
       # Mount source code for hot reload (if using DevTools)
-      - ./src:/app/src:ro
-      - ./build/classes:/app/classes:ro
+      - ../src:/app/src:ro
+      - ../build/classes:/app/classes:ro
       
       # Mount gradle cache to speed up rebuilds
       - ~/.gradle:/home/spring/.gradle:cached
       
       # Mount application properties for easy configuration changes
-      - ./src/main/resources/application.properties:/app/config/application.properties:ro
-      - ./src/main/resources/application-dev.properties:/app/config/application-dev.properties:ro
+      - ../src/main/resources/application.properties:/app/config/application.properties:ro
+      - ../src/main/resources/application-dev.properties:/app/config/application-dev.properties:ro
     stdin_open: true
     tty: true

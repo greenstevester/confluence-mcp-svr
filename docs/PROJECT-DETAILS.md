@@ -265,7 +265,7 @@ For IntelliJ IDEA users, we provide a convenient script to automatically generat
 
 2. **Generate IntelliJ run configuration**:
    ```bash
-   ./create-idea-config.sh
+   ./scripts/create-idea-config.sh
    ```
 
    This script will:
@@ -290,7 +290,7 @@ For IntelliJ IDEA users, we provide a convenient script to automatically generat
 
 When you modify your `.env` file, simply re-run:
 ```bash
-./create-idea-config.sh
+./scripts/create-idea-config.sh
 ```
 
 The script will update your IntelliJ configuration with the new values.

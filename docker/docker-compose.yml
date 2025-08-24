@@ -5,8 +5,8 @@ services:
     image: confluence-mcp-svr:${VERSION:-latest}
     container_name: confluence-mcp-server
     build:
-      context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile}
+      context: ..
+      dockerfile: docker/${DOCKERFILE:-Dockerfile}
       cache_from:
         - confluence-mcp-svr:latest
       args:
@@ -38,7 +38,7 @@ services:
       - MCP_SERVER_VERSION=${MCP_SERVER_VERSION:-2.0.1}
     volumes:
       # Application configuration (optional external config)
-      - ./config:/app/config:ro
+      - ../config:/app/config:ro
       
       # Logs volume for persistent logging
       - confluence-mcp-logs:/app/logs

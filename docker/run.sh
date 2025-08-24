@@ -22,7 +22,7 @@ cd "$PROJECT_ROOT"
 # Default values
 RUN_ENV="${1:-dev}"
 DETACH_MODE=""
-COMPOSE_FILE="docker-compose.yml"
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 ADDITIONAL_COMPOSE=""
 
 # Parse arguments
@@ -73,7 +73,7 @@ load_env() {
     else
         export SPRING_PROFILES_ACTIVE=dev
         export DOCKERFILE=Dockerfile
-        ADDITIONAL_COMPOSE="-f docker-compose.dev.yml"
+        ADDITIONAL_COMPOSE="-f $SCRIPT_DIR/docker-compose.dev.yml"
     fi
 }
 
