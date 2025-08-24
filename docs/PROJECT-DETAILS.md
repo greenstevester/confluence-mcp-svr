@@ -249,3 +249,74 @@ This server follows a "Minimal Interface, Maximal Detail" approach:
     - Check active profile: Add `-Dspring.profiles.active=dev` for development
     - Verify environment variables are set: `echo $ATLASSIAN_SITE_NAME`
 
+## Running in IntelliJ IDEA
+
+### Environment Variables Setup
+
+For IntelliJ IDEA users, we provide a convenient script to automatically generate run configurations with environment variables from your `.env` file.
+
+1. **Create your `.env` file** (if you haven't already):
+   ```bash
+   # Copy the values to your .env file
+   CONFLUENCE_API_BASE_URL=http://localhost:8090
+   CONFLUENCE_API_USERNAME=your-username
+   CONFLUENCE_API_TOKEN=your-api-token
+   ```
+
+2. **Generate IntelliJ run configuration**:
+   ```bash
+   ./create-idea-config.sh
+   ```
+
+   This script will:
+    - Read environment variables from your `.env` file
+    - Create `.idea/runConfigurations/ConfluenceMcpSvrApplication.xml`
+    - Generate a proper IntelliJ run configuration with all environment variables loaded
+
+3. **Use the configuration**:
+    - Restart IntelliJ IDEA or refresh the project
+    - Go to **Run → Edit Configurations**
+    - You'll see **ConfluenceMcpSvrApplication** configuration
+    - Run the application - it will automatically use your `.env` values
+
+### Benefits of this approach:
+
+- ✅ **Secure**: Sensitive credentials stay in `.env` (git-ignored)
+- ✅ **Convenient**: One command to set up IntelliJ configuration
+- ✅ **Consistent**: Same environment variables for all team members
+- ✅ **Simple**: No manual IntelliJ configuration needed
+
+### Updating environment variables:
+
+When you modify your `.env` file, simply re-run:
+```bash
+./create-idea-config.sh
+```
+
+The script will update your IntelliJ configuration with the new values.
+
+## Development
+
+### Building the Project
+
+```bash
+# Clean build
+./gradlew clean build
+
+# Run tests
+./gradlew test
+
+# Create bootable JAR
+./gradlew bootJar
+```
+
+### Running Tests
+
+```bash
+# Run all tests
+./gradlew test
+
+# Run specific test class
+./gradlew test --tests "ConfluenceMcpSvrApplicationTests"
+```
+

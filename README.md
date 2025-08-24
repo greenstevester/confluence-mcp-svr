@@ -127,76 +127,167 @@ Once connected, the following tools will be available to the AI assistant:
 "Create a new page in the 'Team Docs' space with meeting notes from today"
 ```
 
-## Running in IntelliJ IDEA
+## Available Tools
 
-### Environment Variables Setup
+This MCP server provides the following tools for your AI assistant:
 
-For IntelliJ IDEA users, we provide a convenient script to automatically generate run configurations with environment variables from your `.env` file.
+### List Spaces (`list-spaces`)
 
-1. **Create your `.env` file** (if you haven't already):
-   ```bash
-   # Copy the values to your .env file
-   CONFLUENCE_API_BASE_URL=http://localhost:8090
-   CONFLUENCE_API_USERNAME=your-username
-   CONFLUENCE_API_TOKEN=your-api-token
+**Purpose:** Discover available Confluence spaces and find their 'keys' (unique identifiers).
+
+**Use When:** You need to know which spaces exist, find a space's key, or filter spaces by type/status.
+
+**Conversational Example:** "Show me all the Confluence spaces."
+
+**Parameter Example:** `{}` (no parameters needed for basic list) or `{ type: "global", status: "current" }` (to filter).
+
+### Get Space (`get-space`)
+
+**Purpose:** Retrieve detailed information about a _specific_ space using its key. Includes homepage content snippet.
+
+**Use When:** You know the space key (e.g., "DEV") and need its full details, labels, or homepage overview.
+
+**Conversational Example:** "Tell me about the 'DEV' space in Confluence."
+
+**Parameter Example:** `{ spaceKey: "DEV" }`
+
+### List Pages (`list-pages`)
+
+**Purpose:** List pages within specific spaces (using numeric space IDs) or across the instance, with filtering options.
+
+**Use When:** You need to find pages in a known space (requires numeric ID), filter by status, or do simple text searches on titles/labels.
+
+**Conversational Example:** "Show me current pages in space ID 123456." (Use `list-spaces` first if you only know the key).
+
+**Parameter Example:** `{ spaceId: ["123456"] }` or `{ status: ["archived"], query: "Meeting Notes" }`.
+
+### Get Page (`get-page`)
+
+**Purpose:** Retrieve the full content (in Markdown) and metadata of a _specific_ page using its numeric ID.
+
+**Use When:** You know the numeric page ID (found via `list-pages` or `search`) and need to read, analyze, or summarize its content.
+
+**Conversational Example:** "Get the content of Confluence page ID 12345678."
+
+**Parameter Example:** `{ pageId: "12345678" }`
+
+### Search (`search`)
+
+**Purpose:** Perform powerful searches across Confluence content (pages, blogs, attachments) using CQL (Confluence Query Language).
+
+**Use When:** You need complex searches involving multiple criteria, full-text search, or filtering by labels, dates, contributors, etc.
+
+**Conversational Example:** "Search Confluence for pages labeled 'meeting-notes' created in the last week."
+
+**Parameter Example:** `{ cql: "label = meeting-notes AND created > -7d" }`
+
+### Create Space (`create-space`)
+
+**Purpose:** Create a new Confluence space with specified configuration.
+
+**Use When:** You need to create a new space for organizing content, setting up a new project area, or establishing a dedicated knowledge base.
+
+**Conversational Example:** "Create a new space called 'Product Documentation' with key 'PROD_DOCS'."
+
+**Parameter Example:** `{ "key": "PROD_DOCS", "name": "Product Documentation", "description": "Space for all product documentation and guides", "type": "KNOWLEDGE_BASE" }`
+
+**Required Parameters:**
+- `key` - Unique space key (uppercase letters, numbers, underscores only, e.g., "TEAM_DOCS")
+- `name` - Display name for the space
+
+**Optional Parameters:**
+- `description` - Space description
+- `type` - Space type: "GLOBAL" (default), "PERSONAL", "COLLABORATION", "KNOWLEDGE_BASE"
+- `status` - Space status: "CURRENT" (default) or "ARCHIVED"
+
+**Returns:** Comprehensive space creation confirmation with:
+- Space ID, key, name, and type
+- Creation timestamp and author
+- Description (if provided)
+- Direct access links to the new space
+
+### Create Page (`create-page`)
+
+**Purpose:** Create a new page within an existing Confluence space.
+
+**Use When:** You need to add new content, documentation, or information to a space.
+
+**Conversational Example:** "Create a new page called 'API Documentation' in the DEV space with some getting started content."
+
+**Parameter Example:** `{ "title": "API Documentation", "spaceKey": "DEV", "content": "<h1>Getting Started</h1><p>This page contains our API documentation...</p>" }`
+
+**Required Parameters:**
+- `title` - Page title
+- `spaceKey` - Space key where the page should be created (e.g., "DEV", "DOCS")
+- `content` - Page content in Confluence storage format (HTML-like markup)
+
+**Optional Parameters:**
+- `parentId` - ID of parent page (creates as child page)
+- `contentRepresentation` - Content format: "storage" (default) or "wiki"
+- `status` - Page status: "CURRENT" (default) or "DRAFT"
+
+**Content Format Examples:**
+- **Simple text:** `"<p>This is a simple paragraph.</p>"`
+- **With headings:** `"<h1>Main Title</h1><h2>Subtitle</h2><p>Content here.</p>"`
+- **With lists:** `"<ul><li>Item 1</li><li>Item 2</li></ul>"`
+- **With links:** `"<p>See <a href='https://example.com'>example</a> for more info.</p>"`
+
+**Returns:** Detailed page creation confirmation with:
+- Page ID, title, and space information
+- Parent page relationship (if applicable)
+- Direct access links to view the new page
+
+**Important Notes:**
+- Space must exist before creating pages (use `list-spaces` to verify)
+- User must have page creation permissions in the target space
+- Content should be in Confluence storage format (HTML-like markup)
+- Page titles must be unique within the space
+
+## Common Usage Workflows
+
+### Setting Up a New Project Space
+
+1. **Create the project space:**
+   ```
+   "Create a new space for the Alpha project with key 'ALPHA' and description 'Documentation and resources for Project Alpha'"
    ```
 
-2. **Generate IntelliJ run configuration**:
-   ```bash
-   ./create-idea-config.sh
+2. **Create initial project pages:**
+   ```
+   "Create a 'Project Overview' page in the ALPHA space with an overview of Project Alpha goals and timeline"
+   "Create a 'Meeting Notes' page in the ALPHA space as a child of Project Overview"
+   "Create an 'API Documentation' page in the ALPHA space with basic API endpoint information"
    ```
 
-   This script will:
-   - Read environment variables from your `.env` file
-   - Create `.idea/runConfigurations/ConfluenceMcpSvrApplication.xml`
-   - Generate a proper IntelliJ run configuration with all environment variables loaded
+### Content Migration and Organization
 
-3. **Use the configuration**:
-   - Restart IntelliJ IDEA or refresh the project
-   - Go to **Run → Edit Configurations**
-   - You'll see **ConfluenceMcpSvrApplication** configuration
-   - Run the application - it will automatically use your `.env` values
+1. **Discover existing structure:**
+   ```
+   "Show me all current spaces to understand the existing organization"
+   "List pages in the DEV space to see what documentation already exists"
+   ```
 
-### Benefits of this approach:
+2. **Create organized content:**
+   ```
+   "Create a 'Development Guides' space with key 'DEV_GUIDES' for centralizing all development documentation"
+   "Create a 'Getting Started' page in DEV_GUIDES with onboarding information for new developers"
+   ```
 
-- ✅ **Secure**: Sensitive credentials stay in `.env` (git-ignored)
-- ✅ **Convenient**: One command to set up IntelliJ configuration
-- ✅ **Consistent**: Same environment variables for all team members
-- ✅ **Simple**: No manual IntelliJ configuration needed
+### Knowledge Base Development
 
-### Updating environment variables:
+1. **Set up knowledge base:**
+   ```
+   "Create a knowledge base space called 'Customer Support' with key 'SUPPORT_KB'"
+   ```
 
-When you modify your `.env` file, simply re-run:
-```bash
-./create-idea-config.sh
-```
+2. **Structure content hierarchy:**
+   ```
+   "Create a 'Troubleshooting Guide' page in SUPPORT_KB with common customer issues"
+   "Create a 'FAQ' page in SUPPORT_KB with frequently asked questions"
+   "Create a 'Product Features' page as a child of the FAQ page with detailed feature explanations"
+   ```
 
-The script will update your IntelliJ configuration with the new values.
 
-## Development
-
-### Building the Project
-
-```bash
-# Clean build
-./gradlew clean build
-
-# Run tests
-./gradlew test
-
-# Create bootable JAR
-./gradlew bootJar
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-./gradlew test
-
-# Run specific test class
-./gradlew test --tests "ConfluenceMcpSvrApplicationTests"
-```
 
 
 ## License
