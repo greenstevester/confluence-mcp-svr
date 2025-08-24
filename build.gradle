@@ -50,7 +50,12 @@ dependencies {
 	
 	// MacOS native DNS resolver (platform-specific)
 	if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-		implementation 'io.netty:netty-resolver-dns-native-macos'
+		String osArch = System.getProperty("os.arch").toLowerCase()
+		if (osArch.contains("aarch64") || osArch.contains("arm")) {
+			implementation 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-aarch_64'
+		} else {
+			implementation 'io.netty:netty-resolver-dns-native-macos:4.1.100.Final:osx-x86_64'
+		}
 	}
 	
 	// Logging
