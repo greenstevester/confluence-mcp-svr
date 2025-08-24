@@ -156,6 +156,76 @@ confluence.defaults.include-labels=true
 confluence.defaults.include-version=true
 ```
 
+**Benefits:**
+
+- **Real-time Access:** Your AI assistant can directly access up-to-date Confluence content.
+- **Eliminate Copy/Paste:** No need to manually transfer information between Confluence and your AI assistant.
+- **Enhanced AI Capabilities:** Enables AI to search, summarize, analyze, and reference your Confluence documentation contextually.
+- **Security:** You control access via an API token. The AI interacts through the server, and sensitive operations remain contained.
+
+### Interface Philosophy: Simple Input, Rich Output
+
+This server follows a "Minimal Interface, Maximal Detail" approach:
+
+1.  **Simple Tools:** Ask for only essential identifiers or filters (like `pageId`, `spaceKey`, `cql`).
+2.  **Rich Details:** When you ask for a specific item (like `get-page`), the server provides all relevant information by default (content, labels, links, etc.) without needing extra flags.
+
+## Available Tools
+
+This MCP server provides the following tools for your AI assistant:
+
+### List Spaces (`list-spaces`)
+
+**Purpose:** Discover available Confluence spaces and find their 'keys' (unique identifiers).
+
+**Use When:** You need to know which spaces exist, find a space's key, or filter spaces by type/status.
+
+**Conversational Example:** "Show me all the Confluence spaces."
+
+**Parameter Example:** `{}` (no parameters needed for basic list) or `{ type: "global", status: "current" }` (to filter).
+
+### Get Space (`get-space`)
+
+**Purpose:** Retrieve detailed information about a _specific_ space using its key. Includes homepage content snippet.
+
+**Use When:** You know the space key (e.g., "DEV") and need its full details, labels, or homepage overview.
+
+**Conversational Example:** "Tell me about the 'DEV' space in Confluence."
+
+**Parameter Example:** `{ spaceKey: "DEV" }`
+
+### List Pages (`list-pages`)
+
+**Purpose:** List pages within specific spaces (using numeric space IDs) or across the instance, with filtering options.
+
+**Use When:** You need to find pages in a known space (requires numeric ID), filter by status, or do simple text searches on titles/labels.
+
+**Conversational Example:** "Show me current pages in space ID 123456." (Use `list-spaces` first if you only know the key).
+
+**Parameter Example:** `{ spaceId: ["123456"] }` or `{ status: ["archived"], query: "Meeting Notes" }`.
+
+### Get Page (`get-page`)
+
+**Purpose:** Retrieve the full content (in Markdown) and metadata of a _specific_ page using its numeric ID.
+
+**Use When:** You know the numeric page ID (found via `list-pages` or `search`) and need to read, analyze, or summarize its content.
+
+**Conversational Example:** "Get the content of Confluence page ID 12345678."
+
+**Parameter Example:** `{ pageId: "12345678" }`
+
+### Search (`search`)
+
+**Purpose:** Perform powerful searches across Confluence content (pages, blogs, attachments) using CQL (Confluence Query Language).
+
+**Use When:** You need complex searches involving multiple criteria, full-text search, or filtering by labels, dates, contributors, etc.
+
+**Conversational Example:** "Search Confluence for pages labeled 'meeting-notes' created in the last week."
+
+**Parameter Example:** `{ cql: "label = meeting-notes AND created > -7d" }`
+
+
+
 ### Troubleshooting
 
 **Common Issues:**
