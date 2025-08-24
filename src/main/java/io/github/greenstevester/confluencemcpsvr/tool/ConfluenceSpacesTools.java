@@ -7,7 +7,7 @@ import io.github.greenstevester.confluencemcpsvr.model.enums.SpaceType;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluenceSpacesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-// import org.springframework.ai.annotation.Tool;
+import io.github.greenstevester.confluencemcpsvr.annotation.AITool;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,6 +71,7 @@ public class ConfluenceSpacesTools {
      * - Authentication failures: Check Confluence credentials.
      * - Permission denied: User may not have access to list spaces.
      */
+    @AITool(name = "list-spaces", description = "List Confluence spaces with optional filtering by IDs, keys, types, or status. PURPOSE: Discover and browse available Confluence spaces. Provides space metadata including IDs and keys needed for other operations.")
     public String listSpaces(ListSpacesRequest request) {
         logger.debug("list_spaces tool called with: {}", request);
         
@@ -123,6 +124,7 @@ public class ConfluenceSpacesTools {
      * - Access denied: Check permissions for the space.
      * - Authentication failures: Check Confluence credentials.
      */
+    @AITool(name = "get-space", description = "Get detailed information about a specific Confluence space by its ID. PURPOSE: Retrieve comprehensive details about a single Confluence space.")
     public String getSpace(GetSpaceRequest request) {
         logger.debug("get_space tool called with: {}", request);
         
@@ -138,6 +140,7 @@ public class ConfluenceSpacesTools {
     /**
      * Create a new space in Confluence
      */
+    @AITool(name = "create-space", description = "Create a new space in Confluence")
     public String createSpace(CreateSpaceToolRequest request) {
         logger.debug("create_space tool called with: {}", request);
         
@@ -161,6 +164,7 @@ public class ConfluenceSpacesTools {
     /**
      * Update an existing space in Confluence
      */
+    @AITool(name = "update-space", description = "Update an existing space in Confluence")
     public String updateSpace(UpdateSpaceToolRequest request) {
         logger.debug("update_space tool called with: {}", request);
         

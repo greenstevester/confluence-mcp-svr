@@ -5,6 +5,7 @@ import io.github.greenstevester.confluencemcpsvr.service.DocumentationAuditServi
 import io.github.greenstevester.confluencemcpsvr.service.BatchProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.github.greenstevester.confluencemcpsvr.annotation.AITool;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -68,6 +69,7 @@ public class DocumentationMiningTools {
      * - Track improvements over time by comparing reports
      * - Share results with team leads and documentation owners
      */
+    @AITool(name = "audit-documentation", description = "Perform comprehensive documentation audit and analysis")
     public String auditDocumentation(DocumentationAuditRequest request) {
         logger.debug("audit_documentation tool called with: {}", request);
         
@@ -100,6 +102,7 @@ public class DocumentationMiningTools {
      * 
      * EXAMPLE: { }
      */
+    @AITool(name = "analyze-space-structure", description = "Analyze the structure and organization of Confluence spaces")
     public String analyzeSpaceStructure() {
         logger.debug("analyze_space_structure tool called");
         
@@ -289,6 +292,7 @@ public class DocumentationMiningTools {
      * 
      * EXAMPLE: { }
      */
+    @AITool(name = "get-available-audits", description = "Get list of available documentation audits and analyses")
     public String getAvailableAudits() {
         logger.debug("get_available_audits tool called");
         

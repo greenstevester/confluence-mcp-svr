@@ -4,7 +4,7 @@ import io.github.greenstevester.confluencemcpsvr.model.enums.ExcerptStrategy;
 import io.github.greenstevester.confluencemcpsvr.service.ConfluenceSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-// import org.springframework.ai.annotation.Tool;
+import io.github.greenstevester.confluencemcpsvr.annotation.AITool;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,6 +24,7 @@ public class ConfluenceSearchTools {
     /**
      * Search Confluence content using CQL (Confluence Query Language)
      */
+    @AITool(name = "search", description = "Search Confluence content using CQL (Confluence Query Language)")
     public String search(SearchRequest request) {
         logger.debug("search tool called with CQL: {}", request.cql());
         

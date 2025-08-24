@@ -15,10 +15,12 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/snapshot' }
+	maven { url 'https://central.sonatype.com/repository/maven-snapshots/' }
 }
 
 ext {
-	set('springAiVersion', "1.0.1")
+	set('springAiVersion', "1.0.0-SNAPSHOT")
 }
 
 dependencies {
@@ -26,10 +28,14 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-configuration-processor'
 	
 	// Spring AI MCP Server
 	implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
+	
+	// MCP WebMVC Transport (required for Spring AI MCP WebMVC)
+	implementation 'io.modelcontextprotocol.sdk:mcp-spring-webmvc'
 	
 	// HTTP Client for Confluence API
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -81,4 +87,9 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Generate build info for Spring Boot
+springBoot {
+	buildInfo()
 }
