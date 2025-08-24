@@ -82,3 +82,8 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// Generate build info for Spring Boot
+springBoot {
+	buildInfo()
+}
