@@ -67,9 +67,10 @@ Expected response:
 {"status":"UP"}
 ```
 
-**Check MCP server info:**
+**Check MCP server endpoint:**
 ```bash
-curl http://localhost:8081/mcp/info
+# The MCP server uses Server-Sent Events at /mcp/message
+curl -H "Accept: text/event-stream" http://localhost:8081/mcp/message
 ```## Usage
 
 ### Connecting MCP Clients

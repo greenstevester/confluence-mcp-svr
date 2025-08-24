@@ -190,7 +190,7 @@ show_summary() {
     echo -e "${CYAN}Access Points:${NC}"
     echo "  • Application: http://localhost:8081"
     echo "  • Health Check: http://localhost:8081/actuator/health"
-    echo "  • MCP Endpoint: http://localhost:8081/mcp"
+    echo "  • MCP Endpoint: http://localhost:8081/mcp/message (SSE)"
     
     if [ "$MODE" = "dev" ]; then
         echo "  • Debug Port: localhost:5005"
@@ -212,7 +212,7 @@ show_summary() {
     echo "  {"
     echo "    \"mcpServers\": {"
     echo "      \"confluence\": {"
-    echo "        \"url\": \"http://localhost:8081/mcp\""
+    echo "        \"url\": \"http://localhost:8081/mcp/message\""
     echo "      }"
     echo "    }"
     echo "  }"
