@@ -62,7 +62,10 @@ dependencies {
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 	
 	// Testing
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.mockito', module: 'mockito-core'
+		exclude group: 'org.mockito', module: 'mockito-junit-jupiter'
+	}
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'io.projectreactor:reactor-test'
 
