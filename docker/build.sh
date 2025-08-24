@@ -43,7 +43,9 @@ done
 # Load environment variables if .env exists
 if [ -f .env ]; then
     echo -e "${GREEN}Loading environment variables from .env file...${NC}"
-    export $(grep -v '^#' .env | xargs)
+    set -o allexport
+    source .env
+    set +o allexport
 fi
 
 # Determine which Dockerfile to use
