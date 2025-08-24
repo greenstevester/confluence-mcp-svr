@@ -338,3 +338,61 @@ The script will update your IntelliJ configuration with the new values.
 ./gradlew test --tests "ConfluenceMcpSvrApplicationTests"
 ```
 
+🧪 Complete MCP Test Harness
+
+Directory Structure
+
+test-harness/
+├── scripts/
+│   ├── test-with-inspector.sh      # Interactive testing with MCP Inspector
+│   └── run-integration-tests.sh    # Automated integration tests
+├── config/
+│   └── test-examples.env           # Test configuration examples
+└── docs/
+└── MCP-TEST-HARNESS.md         # Comprehensive documentation
+
+src/test/java/.../mcp/
+├── McpTestClient.java              # MCP client test utility
+├── AbstractMcpIntegrationTest.java # Base class for integration tests
+└── ConfluenceMcpIntegrationTest.java # Complete test scenarios
+
+Key Features
+
+1. MCP Inspector Integration
+
+- ./test-harness/scripts/test-with-inspector.sh - Interactive testing using the official MCP Inspector
+- Supports both STDIO and SSE transport modes
+- Automatically builds server and handles environment setup
+
+2. Java MCP Client Test Utilities
+
+- McpTestClient - Programmatic MCP client for automated testing
+- AbstractMcpIntegrationTest - Base class with common test utilities
+- Full STDIO transport support with server JAR execution
+
+3. Comprehensive Test Scenarios
+
+- Server Capabilities - Info, capabilities, protocol compliance
+- Confluence Tools - All spaces, pages, and search tools
+- Error Handling - Authentication, timeouts, parameter validation
+- Performance - Response times and concurrent requests
+
+4. Automated Test Runner
+
+- ./test-harness/scripts/run-integration-tests.sh - Complete automation
+- Build integration, environment setup, test execution
+- Verbose output, pattern matching, skip build options
+
+Usage
+
+Manual Interactive Testing:
+
+./test-harness/scripts/test-with-inspector.sh
+
+Automated Integration Testing:
+
+./test-harness/scripts/run-integration-tests.sh
+./test-harness/scripts/run-integration-tests.sh --verbose
+./test-harness/scripts/run-integration-tests.sh --pattern "ConfluenceSpaces"
+
+
