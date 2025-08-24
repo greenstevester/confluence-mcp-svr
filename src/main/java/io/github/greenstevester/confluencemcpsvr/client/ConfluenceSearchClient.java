@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 public class ConfluenceSearchClient {
     
     private static final Logger logger = LoggerFactory.getLogger(ConfluenceSearchClient.class);
-    private static final String API_PATH = "/wiki/rest/api";
+    private static final String API_PATH = "/rest/api";
     
     private final WebClient webClient;
     
