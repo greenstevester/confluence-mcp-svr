@@ -28,6 +28,10 @@ public class DynamicPortReporter implements ApplicationListener<WebServerInitial
     
     @Override
     public void onApplicationEvent(WebServerInitializedEvent event) {
+        // Skip console output in STDIO mode to prevent interference with MCP protocol
+        if (isStdioMode()) {
+            return;
+        }
         int actualPort = event.getWebServer().getPort();
         String serverUrl = "http://localhost:" + actualPort;
         String mcpEndpoint = serverUrl + "/mcp/message";
@@ -57,5 +61,10 @@ public class DynamicPortReporter implements ApplicationListener<WebServerInitial
         // Structured log entry for parsing/monitoring
         logger.info("MCP Server started on dynamically assigned port: {} - URL: {} - MCP endpoint: {}", 
                    actualPort, serverUrl, mcpEndpoint);
+    }
+    
+    private boolean isStdioMode() {
+        return environment.matchesProfiles("stdio") || 
+               Boolean.parseBoolean(environment.getProperty("spring.ai.mcp.server.stdio", "false"));
     }
 }

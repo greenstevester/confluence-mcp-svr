@@ -84,8 +84,6 @@ case $mode_choice in
             java \
             -Dspring.profiles.active=stdio \
             -Djava.awt.headless=true \
-            -XX:-PrintGCDetails \
-            -XX:-PrintGCTimeStamps \
             -XX:+UseSerialGC \
             -Xms256m \
             -Xmx512m \
@@ -138,8 +136,6 @@ case $mode_choice in
             java \
             -Dspring.profiles.active=stdio \
             -Djava.awt.headless=true \
-            -XX:-PrintGCDetails \
-            -XX:-PrintGCTimeStamps \
             -XX:+UseSerialGC \
             -Xms256m \
             -Xmx512m \

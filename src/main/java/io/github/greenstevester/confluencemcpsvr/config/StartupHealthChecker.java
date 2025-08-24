@@ -53,10 +53,18 @@ public class StartupHealthChecker implements ApplicationListener<ApplicationRead
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        printStartupBanner();
-        checkConfluenceConnection();
-        displayEndpointInformation();
-        printFooter();
+        // Skip console output in STDIO mode to prevent interference with MCP protocol
+        if (!isStdioMode()) {
+            printStartupBanner();
+            checkConfluenceConnection();
+            displayEndpointInformation();
+            printFooter();
+        }
+    }
+    
+    private boolean isStdioMode() {
+        return environment.matchesProfiles("stdio") || 
+               Boolean.parseBoolean(environment.getProperty("spring.ai.mcp.server.stdio", "false"));
     }
 
     private void printStartupBanner() {

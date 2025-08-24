@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -26,10 +27,21 @@ public class EndpointDebugger implements ApplicationListener<ApplicationReadyEve
 
     @Autowired
     private ApplicationContext applicationContext;
+    
+    @Autowired
+    private Environment environment;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        debugRegisteredEndpoints();
+        // Skip console output in STDIO mode to prevent interference with MCP protocol
+        if (!isStdioMode()) {
+            debugRegisteredEndpoints();
+        }
+    }
+    
+    private boolean isStdioMode() {
+        return environment.matchesProfiles("stdio") || 
+               Boolean.parseBoolean(environment.getProperty("spring.ai.mcp.server.stdio", "false"));
     }
 
     private void debugRegisteredEndpoints() {
