@@ -1,95 +1,109 @@
 # Confluence MCP Server
 
-A Model Context Protocol (MCP) Server for Atlassian Confluence, so you can query, scrape and even update Confluence spaces, pages, and content.
+Connect your AI assistant directly to Atlassian Confluence to search, read, create, and manage documentation without manual copy-paste. This Model Context Protocol (MCP) server enables AI assistants like Claude, ChatGPT, and GitHub Copilot to interact with your Confluence spaces and pages in real-time.
 
-## Key Features
+> **Status**: Early development - Core MCP infrastructure complete, Confluence tool implementations in progress
 
-Provides AI assistants (Github co-pilot, claude, chatGPT) with tools to:
-- **Search** Confluence spaces and pages using powerful CQL queries
-- **Read** Confluence page content with full formatting and metadata
-- **Create** new Confluence spaces and pages with content
-- **List and browse** spaces and pages with advanced filtering
-- **Discover** content structure and relationships
+## Why Use This MCP Server?
+
+- **Eliminate Manual Work**: No more copying content between Confluence and your AI assistant
+- **Real-Time Access**: AI gets up-to-date information directly from your Confluence instance
+- **Enhanced AI Capabilities**: Enable AI to search, summarize, and analyze your documentation contextually
+- **Secure Integration**: You control access via API tokens - AI interactions remain contained
+
+## Compatibility
+
+**Primary Target**: Confluence Server/Data Center 9.2 (fully tested)
+**Also Compatible**: Confluence Server/Data Center 7.9+ (requires personal access tokens)
+**Earlier Versions**: May work but not officially tested
+
+See [Confluence REST API documentation](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) for full compatibility details.
+
+
+## Available AI Tools
+
+Once connected, your AI assistant gains access to these Confluence capabilities:
+
+- **Search Content** - Powerful CQL-based search across all spaces and pages
+- **Read Pages** - Get full page content converted to Markdown with metadata
+- **List & Browse** - Discover spaces, pages, and content structure
+- **Create Content** - Create new spaces and pages with rich content
+- **Manage Structure** - Organize content with parent-child relationships
 
 ## Quick Start
 
-To get this going, you've got options:
-
-- **Run locally:** Install Java 21 or higher, clone the repository, and run the server.
-- **Run in Docker:** Use the pre-built Docker image, or build your own.
-
-## Run locally
-
 ### Prerequisites
 
-- (to run locally) Java 21 or higher installed
-- Access to a target Confluence instance (Cloud or Server)
-- Confluence Personal Access Token (PAT) credentials, details below on how to get that.
+- **Java 21+** installed on your system
+- **Confluence instance** (Cloud or Server 7.9+) with admin/API access
+- **Personal Access Token** from Confluence (see setup below)
 
-### Local Installation
+### Installation Options
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd confluence-mcp-svr
+**Option A: Run Locally (Recommended for development)**
+```bash
+# 1. Clone and navigate
+git clone https://github.com/greenstevester/confluence-mcp-svr.git
+cd confluence-mcp-svr
+
+# 2. Configure credentials (create .env file)
+cp .env.example .env
+# Edit .env with your Confluence details
+
+# 3. Build and run
+./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+**Option B: Run with Docker**
+```bash
+# Quick start with interactive setup
+./docker/docker-quickstart.sh
+```
+
+### Get Your Confluence API Token
+
+1. Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Click "Create API token"
+3. Name it "MCP Server" 
+4. Copy the token immediately (you won't see it again)
+5. Add to your `.env` file:
+   ```env
+   CONFLUENCE_API_BASE_URL=https://your-site.atlassian.net
+   CONFLUENCE_API_USERNAME=your-email@example.com
+   CONFLUENCE_API_TOKEN=your-copied-token
    ```
-
-2. **Configure Confluence credentials:**
-
-  For configuration:
-
-   **Option A: Using Environment Variables (Recommended for production)**
-   ```bash
-   export CONFLUENCE_API_BASE_URL=https://your-site.atlassian.net  # Full URL to your Confluence instance
-   export CONFLUENCE_API_USERNAME=your-email@example.com
-   export CONFLUENCE_API_TOKEN=your-api-token-here
-   ```
-5. **Run the application:**
-
-   **For development with application-dev.properties:**
-   ```bash
-   ./gradlew bootRun --args='--spring.profiles.active=dev'
-   ```
-
-The server will start on `http://localhost:8081` and be ready to accept MCP client connections.
 
 ### Verify Installation
 
-Once the server is running, verify it's working:
+Once running, test your server:
 
-**Check health endpoint:**
 ```bash
+# Check server health
 curl http://localhost:8081/actuator/health
-```
+# Expected: {"status":"UP"}
 
-Expected response:
-```json
-{"status":"UP"}
-```
-
-**Check MCP server endpoint:**
-```bash
-# The MCP server uses Server-Sent Events at /mcp/message
+# Verify MCP endpoint
 curl -H "Accept: text/event-stream" http://localhost:8081/mcp/message
-```## Usage
+# Should establish SSE connection
+```
 
-### Connecting MCP Clients
+## Usage
 
-This server implements the MCP protocol and can be connected to by any MCP-compatible client.
+### Connecting to AI Assistants
 
-#### Claude Desktop Configuration
+#### Claude Desktop
 
-Add to your Claude Desktop MCP configuration:
+Add this configuration to your Claude Desktop MCP settings:
 
 ```json
 {
   "mcpServers": {
     "confluence": {
       "command": "java",
-      "args": ["-jar", "/path/to/confluence-mcp-svr-0.0.1-SNAPSHOT.jar"],
+      "args": ["-jar", "confluence-mcp-svr-0.0.1-SNAPSHOT.jar"],
       "env": {
-        "CONFLUENCE_BASE_URL": "https://your-domain.atlassian.net",
-        "CONFLUENCE_USERNAME": "your-email@domain.com",
+        "CONFLUENCE_API_BASE_URL": "https://your-site.atlassian.net",
+        "CONFLUENCE_API_USERNAME": "your-email@example.com",
         "CONFLUENCE_API_TOKEN": "your-api-token"
       }
     }
@@ -97,36 +111,28 @@ Add to your Claude Desktop MCP configuration:
 }
 ```
 
-#### Custom MCP Client
+#### Other MCP Clients
 
-For integrating with your own MCP client, see the [MCP Client Guide](docs/MCP-CLIENT.md).
-
-### Available Tools
-
-Once connected, the following tools will be available to the AI assistant:
-
-- `confluence_search_pages` - Search for pages across Confluence spaces
-- `confluence_get_page` - Retrieve page content and metadata
-- `confluence_create_page` - Create new pages in Confluence
-- `confluence_update_page` - Update existing page content
-- `confluence_list_spaces` - List available Confluence spaces
+This server works with any MCP-compatible client. For custom integrations, see our [MCP Client Implementation Guide](docs/MCP-CLIENT.md).
 
 ### Example Interactions
 
-**Search for pages:**
-```
-"Find all pages about 'API documentation' in the Engineering space"
-```
+Once connected, you can interact with your Confluence instance using natural language:
 
-**Read page content:**
-```
-"Show me the content of the 'Getting Started' page"
-```
+**Search for content:**
+> "Find all pages about 'API documentation' in the Engineering space"
 
-**Create documentation:**
-```
-"Create a new page in the 'Team Docs' space with meeting notes from today"
-```
+**Read documentation:**
+> "Show me the content of the 'Getting Started' page in the DEV space"
+
+**Create new content:**
+> "Create a new page called 'Sprint Planning' in the TEAM space with our planning template"
+
+**Discover structure:**
+> "List all spaces and show me what's in the DOCS space"
+
+**Analyze content:**
+> "Summarize all the troubleshooting guides in our support documentation"
 
 ## Available Tools
 
@@ -244,69 +250,91 @@ This MCP server provides the following tools for your AI assistant:
 - Content should be in Confluence storage format (HTML-like markup)
 - Page titles must be unique within the space
 
-## Common Usage Workflows
+## Common Workflows
 
-### Setting Up a New Project Space
+### Setting Up Documentation Spaces
 
-1. **Create the project space:**
-   ```
-   "Create a new space for the Alpha project with key 'ALPHA' and description 'Documentation and resources for Project Alpha'"
-   ```
+**Create a new project space:**
+> "Create a space called 'Project Alpha' with key 'ALPHA' for our new product documentation"
 
-2. **Create initial project pages:**
-   ```
-   "Create a 'Project Overview' page in the ALPHA space with an overview of Project Alpha goals and timeline"
-   "Create a 'Meeting Notes' page in the ALPHA space as a child of Project Overview"
-   "Create an 'API Documentation' page in the ALPHA space with basic API endpoint information"
-   ```
+**Add initial structure:**
+> "In the ALPHA space, create a 'Getting Started' page with setup instructions and a 'Meeting Notes' page for team updates"
 
-### Content Migration and Organization
+### Content Discovery and Organization
 
-1. **Discover existing structure:**
-   ```
-   "Show me all current spaces to understand the existing organization"
-   "List pages in the DEV space to see what documentation already exists"
-   ```
+**Explore existing content:**
+> "Show me all spaces and their purposes, then list the most recently updated pages"
 
-2. **Create organized content:**
-   ```
-   "Create a 'Development Guides' space with key 'DEV_GUIDES' for centralizing all development documentation"
-   "Create a 'Getting Started' page in DEV_GUIDES with onboarding information for new developers"
-   ```
+**Organize information:**
+> "Find all API documentation across our spaces and create a summary page linking to each guide"
 
-### Knowledge Base Development
+### Knowledge Management
 
-1. **Set up knowledge base:**
-   ```
-   "Create a knowledge base space called 'Customer Support' with key 'SUPPORT_KB'"
-   ```
+**Create structured knowledge base:**
+> "Create a 'Support KB' space, then add pages for FAQ, troubleshooting, and product features with proper hierarchy"
 
-2. **Structure content hierarchy:**
-   ```
-   "Create a 'Troubleshooting Guide' page in SUPPORT_KB with common customer issues"
-   "Create a 'FAQ' page in SUPPORT_KB with frequently asked questions"
-   "Create a 'Product Features' page as a child of the FAQ page with detailed feature explanations"
-   ```
+**Content analysis:**
+> "Analyze our documentation for gaps - what topics are mentioned but don't have dedicated pages?"
 
 
 
 
-## License
+## Development & Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project welcomes contributions! See our comprehensive documentation:
 
-## Acknowledgments
+- **[Development Setup](docs/PROJECT-DETAILS.md)** - Build, test, and run locally
+- **[Docker Guide](docs/DOCKER.md)** - Container deployment and debugging  
+- **[Test Harness](test-harness/docs/MCP-TEST-HARNESS.md)** - Comprehensive testing tools
+- **[MCP Client Guide](docs/MCP-CLIENT.md)** - Integrate with custom applications
 
-- Built with [Spring AI MCP Server](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-server-boot-starter-docs.html)
-- [Model Context Protocol](https://modelcontextprotocol.io/) specification
-- [Atlassian Confluence API](https://developer.atlassian.com/cloud/confluence/rest/v2/)
+### Quick Development Setup
 
-## Status
+```bash
+# Build and test
+./gradlew clean build
 
-🚧 **This project is currently in early development.** 
+# Run with development profile
+./gradlew bootRun --args='--spring.profiles.active=dev'
 
-Core MCP server infrastructure is in place, but Confluence-specific tool implementations are still being developed. Contributions welcome!
+# Run comprehensive tests
+./test-harness/scripts/run-integration-tests.sh
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Server won't start:**
+```bash
+# Check Java version (needs 21+)
+java --version
+
+# Verify port 8081 is available
+lsof -i :8081
+```
+
+**Authentication errors:**
+- Verify API token is correct and not expired
+- Check base URL format (include `https://`)
+- Ensure user has Confluence permissions
+- Test credentials manually:
+  ```bash
+  curl -u "$CONFLUENCE_API_USERNAME:$CONFLUENCE_API_TOKEN" \
+       "$CONFLUENCE_API_BASE_URL/rest/api/space"
+  ```
+
+**Connection issues:**
+- Check server logs: `./docker/logs.sh` (Docker) or application console output
+- Verify firewall/network access to Confluence instance
+- Test health endpoint: `curl http://localhost:8081/actuator/health`
+
+### Getting Help
+
+- **Issues**: [GitHub Issues](https://github.com/greenstevester/confluence-mcp-svr/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/greenstevester/confluence-mcp-svr/discussions)
+- **Documentation**: Comprehensive guides in the [docs/](docs) directory
 
 ---
 
-**Need help?** Open an issue or check the [troubleshooting section](#troubleshooting) above.
+**Built with [Spring AI MCP Server](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-server-boot-starter-docs.html) • [Model Context Protocol](https://modelcontextprotocol.io/) • [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/v2/)**
