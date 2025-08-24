@@ -3,6 +3,8 @@ package io.github.greenstevester.confluencemcpsvr;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,22 +20,36 @@ import java.util.Map;
 @ActiveProfiles("test")
 public abstract class AbstractConfluenceIntTest {
 
-    private static final Map<String, String> ENV_TO_PROPERTY_MAP = Map.of(
-            "CONFLUENCE_API_BASE_URL", "confluence.api.base-url",
-            "CONFLUENCE_API_USERNAME", "confluence.api.username",
-            "CONFLUENCE_API_TOKEN", "confluence.api.token"
-    );
+    private static final Map<String, String> envVariables = new java.util.HashMap<>();
 
-    @BeforeAll
-    static void setupEnvironment() {
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
         loadEnvironmentVariables();
+        
+        // Set properties dynamically instead of using System.setProperty
+        registry.add("confluence.api.base-url", () -> 
+            envVariables.getOrDefault("CONFLUENCE_API_BASE_URL", "http://localhost:8090"));
+        registry.add("confluence.api.username", () -> 
+            envVariables.getOrDefault("CONFLUENCE_API_USERNAME", "test-user"));
+        registry.add("confluence.api.token", () -> 
+            envVariables.getOrDefault("CONFLUENCE_API_TOKEN", "test-token"));
     }
 
     /**
      * Loads environment variables from .env file if it exists.
-     * Maps environment variables to Spring properties for test configuration.
+     * Maps environment variables to the envVariables map for test configuration.
      */
     protected static void loadEnvironmentVariables() {
+        // First load from system environment variables
+        String baseUrl = System.getenv("CONFLUENCE_API_BASE_URL");
+        String username = System.getenv("CONFLUENCE_API_USERNAME");
+        String token = System.getenv("CONFLUENCE_API_TOKEN");
+        
+        if (baseUrl != null) envVariables.put("CONFLUENCE_API_BASE_URL", baseUrl);
+        if (username != null) envVariables.put("CONFLUENCE_API_USERNAME", username);
+        if (token != null) envVariables.put("CONFLUENCE_API_TOKEN", token);
+        
+        // Then try to load from .env file (overrides system env vars)
         Path envFile = Paths.get(".env");
         if (Files.exists(envFile)) {
             try {
@@ -50,13 +66,8 @@ public abstract class AbstractConfluenceIntTest {
                                     value = value.substring(1, value.length() - 1);
                                 }
                                 
-                                System.setProperty(key, value);
-                                
-                                // Map environment variable to Spring property
-                                String mappedProperty = ENV_TO_PROPERTY_MAP.get(key);
-                                if (mappedProperty != null) {
-                                    System.setProperty(mappedProperty, value);
-                                }
+                                // Store in our map instead of System properties
+                                envVariables.put(key, value);
                             }
                         });
                 System.out.println("Successfully loaded environment variables from .env file");

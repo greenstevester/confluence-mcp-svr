@@ -2,6 +2,44 @@
 
 A Model Context Protocol (MCP) Server for Atlassian Confluence, so you can query, scrape and even update Confluence spaces, pages, and content.
 
+NOTE: this MCP server is targeted at Confluence v9.2 Server/Data Center.
+
+## Compatibility
+
+see https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about  
+see https://docs.atlassian.com/atlassian-confluence/REST/6.6.0/
+
+### Supported Confluence Versions
+
+- **Confluence Server/Data Center 9.2** - Fully tested and verified
+- **Confluence Server/Data Center 7.9+** - Compatible (requires personal access tokens)
+- **Earlier versions** - May work but not officially tested
+
+### REST API Endpoints
+
+This MCP server uses the standard Confluence REST API v1 endpoints:
+
+- **Spaces API**: `/rest/api/space`
+  - `GET /rest/api/space` - List spaces
+  - `GET /rest/api/space/{spaceKey}` - Get specific space
+  - `POST /rest/api/space` - Create new space
+  - `PUT /rest/api/space/{spaceKey}` - Update space
+
+- **Content API**: `/rest/api/content`
+  - `GET /rest/api/content` - List pages/content
+  - `GET /rest/api/content/{pageId}` - Get specific page
+  - `POST /rest/api/content` - Create new page
+  - `PUT /rest/api/content/{pageId}` - Update page
+
+- **Search API**: `/rest/api/search`
+  - `GET /rest/api/search` - CQL-based content search
+
+### Authentication
+
+- **Personal Access Tokens (PAT)** - Recommended for Confluence 7.9+
+- **Basic Authentication** - Username/password (less secure)
+- **Bearer Token Authentication** - API tokens via Authorization header
+
 ## Key Features
 
 Provides AI assistants (Github co-pilot, claude, chatGPT) with tools to:

@@ -37,7 +37,7 @@ public class EndpointDebugger implements ApplicationListener<ApplicationReadyEve
         System.out.println(ANSI_CYAN + "🔍 Debug: All Registered Endpoints" + ANSI_RESET);
         
         try {
-            RequestMappingHandlerMapping mapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
+            RequestMappingHandlerMapping mapping = applicationContext.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
             Map<RequestMappingInfo, HandlerMethod> handlerMethods = mapping.getHandlerMethods();
             
             System.out.println("   Total endpoints found: " + handlerMethods.size());

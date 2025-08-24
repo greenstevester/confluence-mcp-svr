@@ -31,12 +31,15 @@ public class WebClientConfiguration {
             logger.info("Detected MacOS - MacOS native DNS resolver will be used if dependency is available");
         }
         
-        // Use Bearer token authentication
+        // Use Bearer token authentication with validation
         String token = confluenceProperties.api().token();
+        if (token == null || token.trim().isEmpty()) {
+            throw new IllegalStateException("Confluence API token is required but not configured. Please set CONFLUENCE_API_TOKEN environment variable.");
+        }
         
         return WebClient.builder()
             .baseUrl(confluenceProperties.api().baseUrl())
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token.trim())
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HttpHeaders.USER_AGENT, "MCP-Confluence-Server/2.0.1")

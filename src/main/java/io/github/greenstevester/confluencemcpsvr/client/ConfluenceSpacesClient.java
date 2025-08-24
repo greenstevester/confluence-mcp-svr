@@ -84,7 +84,7 @@ public class ConfluenceSpacesClient {
     public Mono<Space> getSpace(String spaceId) {
         logger.debug("Getting space with ID: {}", spaceId);
         
-        String uri = API_PATH + "/spaces/" + spaceId;
+        String uri = API_PATH + "/space/" + spaceId;
         
         logger.debug("Making request to: {}", uri);
         
